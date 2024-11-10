@@ -52,6 +52,28 @@ Base URL: `https://www.russ.rest/lastfm`
 ![Top artists](https://www.russ.rest/lastfm?artists&width=1200)
 ```
 
+## Last.fm Last Played
+
+Grabs the last thing you scrobbled on LastFM and displays it with cover art.
+
+### Usage
+
+Base URL: `https://www.russ.rest/lastfm-now-playing`
+
+#### Parameters
+
+- `username` - Last.fm username (default: [RussMckendrick](http://last.fm/user/RussMckendrick))
+- `width` - Width of the generated SVG in pixels (default: 500)
+
+#### Example
+
+```markdown
+![Last Played](https://www.russ.rest/lastfm-now-playing?username=RussMcKendrick&width=900)
+```
+
+![Last Played](https://www.russ.rest/lastfm-now-playing?username=RussMcKendrick&width=900)
+
+
 ## License
 
 MIT License - Feel free to use and modify as needed.
