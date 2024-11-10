@@ -15,7 +15,6 @@ export async function onRequest(context) {
     const showAlbums = url.searchParams.has('albums');
     const showArtists = url.searchParams.has('artists') || (!showAlbums);
     
-    // Get custom width from URL params, default to 500
     const customWidth = parseInt(url.searchParams.get('width')) || 500;
     
     const method = showAlbums ? 'user.gettopalbums' : 'user.gettopartists';
@@ -33,17 +32,14 @@ export async function onRequest(context) {
 
     // Calculate proportional sizes
     const fontSize = Math.max(12, Math.round(customWidth / 60));
-    const titleSize = Math.max(16, Math.round(customWidth / 35));  // Increased title size
+    const titleSize = Math.max(16, Math.round(customWidth / 35));
     const rowHeight = Math.max(18, Math.round(customWidth / 40));
-    const headerHeight = Math.round(customWidth / 12);  // Slightly larger header
+    const headerHeight = Math.round(customWidth / 12);
     const logoSize = Math.round(titleSize * 0.8);
-    const startY = headerHeight;  // Remove extra padding after header
+    const startY = headerHeight;
 
     // Calculate exact height needed
     const totalHeight = startY + (items.length * rowHeight);
-
-    // Get max plays for color scaling
-    const maxPlays = Math.max(...items.map(item => parseInt(item.playcount)));
 
     // Generate SVG
     const svg = `
@@ -53,6 +49,7 @@ export async function onRequest(context) {
           .item-name { font: ${fontSize}px system-ui, sans-serif; fill: #D6D5C9; }
           .artist-name { font: ${fontSize}px system-ui, sans-serif; fill: #B9BAA3; }
           .plays { font: ${fontSize}px system-ui, sans-serif; fill: #B9BAA3; }
+          .dots { font: ${fontSize}px system-ui, sans-serif; fill: #666666; letter-spacing: 2px; }
           .row-bg { transition: opacity 0.3s; }
           .row-bg:hover { opacity: 0.8; }
         </style>
@@ -73,10 +70,9 @@ export async function onRequest(context) {
 
         <!-- Items List -->
         ${items.map((item, i) => {
-          // Calculate color based on position (darker at top, Last.fm red at bottom)
-          const position = i / (items.length - 1);  // 0 for first item, 1 for last
-          const startColor = {r: 128, g: 0, b: 0};  // Darker red (#800000)
-          const endColor = {r: 186, g: 0, b: 0};    // Last.fm red (#BA0000)
+          const position = i / (items.length - 1);
+          const startColor = {r: 128, g: 0, b: 0};
+          const endColor = {r: 186, g: 0, b: 0};
           
           const currentColor = {
             r: Math.round(startColor.r + (endColor.r - startColor.r) * position),
@@ -88,12 +84,21 @@ export async function onRequest(context) {
           const playCount = parseInt(item.playcount);
           
           if (showAlbums) {
+            // Calculate number of dots needed (based on available space)
+            const textWidth = item.name.length * (fontSize * 0.6); // Approximate width of album name
+            const artistWidth = (item.artist.name.length + 3) * (fontSize * 0.6); // Width of "by Artist"
+            const availableSpace = customWidth - 50 - textWidth - artistWidth;
+            const numDots = Math.max(3, Math.floor(availableSpace / (fontSize * 0.5)));
+            const dots = '.'.repeat(numDots);
+
             return `
               <g transform="translate(0, ${startY + (i * rowHeight)})">
                 <rect class="row-bg" x="0" y="0" width="${customWidth}" height="${rowHeight}" 
                       fill="${color}"/>
-                <text x="25" y="${rowHeight/2 + fontSize/3}" class="item-name">
-                  ${item.name} by ${item.artist.name}
+                <text x="25" y="${rowHeight/2 + fontSize/3}" class="item-name">${item.name}</text>
+                <text x="25" y="${rowHeight/2 + fontSize/3}" class="dots" text-anchor="start">
+                  <tspan x="${textWidth + 35}" class="dots">${dots}</tspan>
+                  <tspan x="${customWidth - 25}" class="artist-name" text-anchor="end">by ${item.artist.name}</tspan>
                 </text>
               </g>
             `;
