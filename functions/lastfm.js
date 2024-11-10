@@ -33,11 +33,11 @@ export async function onRequest(context) {
 
     // Calculate proportional sizes
     const fontSize = Math.max(12, Math.round(customWidth / 60));
-    const titleSize = Math.max(14, Math.round(customWidth / 40));
+    const titleSize = Math.max(16, Math.round(customWidth / 35));  // Increased title size
     const rowHeight = Math.max(18, Math.round(customWidth / 40));
-    const headerHeight = Math.round(customWidth / 16);
+    const headerHeight = Math.round(customWidth / 12);  // Slightly larger header
     const logoSize = Math.round(titleSize * 0.8);
-    const startY = headerHeight + Math.round(customWidth / 80);
+    const startY = headerHeight;  // Remove extra padding after header
 
     // Calculate exact height needed
     const totalHeight = startY + (items.length * rowHeight);
@@ -57,8 +57,8 @@ export async function onRequest(context) {
           .row-bg:hover { opacity: 0.8; }
         </style>
         
-        <!-- Header Background - slightly lighter -->
-        <rect width="${customWidth}" height="${headerHeight}" fill="#cc0000"/>
+        <!-- Header Background -->
+        <rect width="${customWidth}" height="${headerHeight}" fill="#800000"/>
         
         <!-- Header Group -->
         <g transform="translate(25, ${headerHeight/2 + titleSize/3})">
@@ -73,14 +73,24 @@ export async function onRequest(context) {
 
         <!-- Items List -->
         ${items.map((item, i) => {
-          const playCount = parseInt(item.playcount);
-          const opacity = 0.3 + (playCount / maxPlays * 0.7);
+          // Calculate color based on position (darker at top, Last.fm red at bottom)
+          const position = i / (items.length - 1);  // 0 for first item, 1 for last
+          const startColor = {r: 128, g: 0, b: 0};  // Darker red (#800000)
+          const endColor = {r: 186, g: 0, b: 0};    // Last.fm red (#BA0000)
+          
+          const currentColor = {
+            r: Math.round(startColor.r + (endColor.r - startColor.r) * position),
+            g: 0,
+            b: 0
+          };
+          
+          const color = `rgb(${currentColor.r}, ${currentColor.g}, ${currentColor.b})`;
           
           if (showAlbums) {
             return `
               <g transform="translate(0, ${startY + (i * rowHeight)})">
                 <rect class="row-bg" x="0" y="0" width="${customWidth}" height="${rowHeight}" 
-                      fill="#BA0000" opacity="${opacity}"/>
+                      fill="${color}"/>
                 <text x="25" y="${rowHeight/2 + fontSize/3}" class="item-name">
                   ${item.name} by ${item.artist.name}
                 </text>
@@ -90,7 +100,7 @@ export async function onRequest(context) {
             return `
               <g transform="translate(0, ${startY + (i * rowHeight)})">
                 <rect class="row-bg" x="0" y="0" width="${customWidth}" height="${rowHeight}" 
-                      fill="#BA0000" opacity="${opacity}"/>
+                      fill="${color}"/>
                 <text x="25" y="${rowHeight/2 + fontSize/3}" class="item-name">${item.name}</text>
                 <text x="${customWidth - 25}" y="${rowHeight/2 + fontSize/3}" class="plays" text-anchor="end">
                   ${playCount} plays
