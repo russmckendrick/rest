@@ -4,7 +4,7 @@ A collection of serverless functions that generate dynamic content, hosted on Cl
 
 ## Last.fm Weekly Artists and Albums
 
-Generate SVG visualizations of your Last.fm listening history. The function supports displaying both top artists and albums from the last week.
+Generate SVG visualizations of your Last.fm listening history for the last week. The function supports displaying both top artists and albums you have been listening too for the last 7 days.
 
 ### Usage
 
