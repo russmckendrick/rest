@@ -17,8 +17,6 @@ export async function onRequest(context) {
     
     // Get custom width from URL params, default to 500
     const customWidth = parseInt(url.searchParams.get('width')) || 500;
-    // Calculate height using new ratio (roughly 3:1)
-    const height = Math.round(customWidth * 0.35);
     
     const method = showAlbums ? 'user.gettopalbums' : 'user.gettopartists';
     
@@ -33,27 +31,23 @@ export async function onRequest(context) {
     const data = await lastfmResponse.json();
     const items = showAlbums ? data.topalbums.album : data.topartists.artist;
 
+    // Calculate proportional sizes
+    const fontSize = Math.max(12, Math.round(customWidth / 60));
+    const titleSize = Math.max(14, Math.round(customWidth / 40));
+    const rowHeight = Math.max(18, Math.round(customWidth / 40));
+    const headerHeight = Math.round(customWidth / 16);
+    const logoSize = Math.round(titleSize * 0.8);
+    const startY = headerHeight + Math.round(customWidth / 80);
+
+    // Calculate exact height needed
+    const totalHeight = startY + (items.length * rowHeight);
+
     // Get max plays for color scaling
     const maxPlays = Math.max(...items.map(item => parseInt(item.playcount)));
-    
-    // Calculate proportional sizes based on custom width
-    const fontSize = Math.max(12, Math.round(customWidth / 60));  // Reduced font size
-    const titleSize = Math.max(14, Math.round(customWidth / 40));  // Reduced title size
-    const rowHeight = Math.max(18, Math.round(customWidth / 40));  // Adjusted row height
-    const startY = Math.round(customWidth / 16);
-    const headerHeight = Math.round(customWidth / 16);
-    const logoSize = Math.round(titleSize * 0.8);  // Adjusted logo size
 
     // Generate SVG
     const svg = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="${customWidth}" height="${height}" viewBox="0 0 ${customWidth} ${height}">
-        <defs>
-          <linearGradient id="headerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" style="stop-color:#A22C29"/>
-            <stop offset="100%" style="stop-color:#902923"/>
-          </linearGradient>
-        </defs>
-        
+      <svg xmlns="http://www.w3.org/2000/svg" width="${customWidth}" height="${totalHeight}" viewBox="0 0 ${customWidth} ${totalHeight}">
         <style>
           .title { font: bold ${titleSize}px system-ui, sans-serif; fill: #D6D5C9; }
           .item-name { font: ${fontSize}px system-ui, sans-serif; fill: #D6D5C9; }
@@ -63,11 +57,8 @@ export async function onRequest(context) {
           .row-bg:hover { opacity: 0.8; }
         </style>
         
-        <!-- Background -->
-        <rect width="${customWidth}" height="${height}" fill="#0A100D"/>
-        
-        <!-- Header Background -->
-        <rect width="${customWidth}" height="${headerHeight}" fill="#A22C29"/>
+        <!-- Header Background - slightly lighter -->
+        <rect width="${customWidth}" height="${headerHeight}" fill="#cc0000"/>
         
         <!-- Header Group -->
         <g transform="translate(25, ${headerHeight/2 + titleSize/3})">
@@ -89,7 +80,7 @@ export async function onRequest(context) {
             return `
               <g transform="translate(0, ${startY + (i * rowHeight)})">
                 <rect class="row-bg" x="0" y="0" width="${customWidth}" height="${rowHeight}" 
-                      fill="#A22C29" opacity="${opacity}"/>
+                      fill="#BA0000" opacity="${opacity}"/>
                 <text x="25" y="${rowHeight/2 + fontSize/3}" class="item-name">
                   ${item.name} by ${item.artist.name}
                 </text>
@@ -99,7 +90,7 @@ export async function onRequest(context) {
             return `
               <g transform="translate(0, ${startY + (i * rowHeight)})">
                 <rect class="row-bg" x="0" y="0" width="${customWidth}" height="${rowHeight}" 
-                      fill="#A22C29" opacity="${opacity}"/>
+                      fill="#BA0000" opacity="${opacity}"/>
                 <text x="25" y="${rowHeight/2 + fontSize/3}" class="item-name">${item.name}</text>
                 <text x="${customWidth - 25}" y="${rowHeight/2 + fontSize/3}" class="plays" text-anchor="end">
                   ${playCount} plays
