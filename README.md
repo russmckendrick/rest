@@ -15,7 +15,7 @@ Base URL: `https://www.russ.rest/lastfm`
 - `artists` - Display top artists (default if no view parameter is specified)
 - `albums` - Display top albums
 - `username` - Last.fm username (default: [RussMckendrick](http://last.fm/user/RussMckendrick))
-- `width` - Width of the generated SVG in pixels (default: 800)
+- `width` - Width of the generated SVG in pixels (default: 500)
 
 #### Examples
 
