@@ -1,4 +1,4 @@
-// functions/lastfm-now-playing.js
+// functions/lastfmnowplaying.js
 export async function onRequest(context) {
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -53,7 +53,7 @@ export async function onRequest(context) {
 
     // Function to escape XML special characters
     const escapeXml = (unsafe) => {
-      return unsafe.replace(/[<>&'"/g, (c) => {
+      return unsafe.replace(/[<>&'"/g, (c) => {, (c) => {
         switch (c) {
           case '<': return '&lt;';
           case '>': return '&gt;';
