@@ -30,6 +30,19 @@ export async function onRequest(context) {
     const data = await lastfmResponse.json();
     const items = showAlbums ? data.topalbums.album : data.topartists.artist;
 
+    // Function to escape XML special characters
+    const escapeXml = (unsafe) => {
+      return unsafe.replace(/[<>&'"]/g, (c) => {
+        switch (c) {
+          case '<': return '&lt;';
+          case '>': return '&gt;';
+          case '&': return '&amp;';
+          case '\'': return '&apos;';
+          case '"': return '&quot;';
+        }
+      });
+    };
+
     // Calculate proportional sizes
     const fontSize = Math.max(12, Math.round(customWidth / 60));
     const titleSize = Math.max(16, Math.round(customWidth / 35));
@@ -84,9 +97,11 @@ export async function onRequest(context) {
           const playCount = parseInt(item.playcount);
           
           if (showAlbums) {
-            const textWidth = item.name.length * (fontSize * 0.6); // Approximate width of album name
-            const artistWidth = (item.artist.name.length + 3) * (fontSize * 0.6); // Width of "by Artist"
-            const padding = 50; // Total padding (left + right)
+            const name = escapeXml(item.name);
+            const artistName = escapeXml(item.artist.name);
+            const textWidth = name.length * (fontSize * 0.6);
+            const artistWidth = (artistName.length + 3) * (fontSize * 0.6);
+            const padding = 50;
             const separatorStartX = textWidth + 35;
             const separatorEndX = customWidth - artistWidth - 35;
 
@@ -94,20 +109,21 @@ export async function onRequest(context) {
               <g transform="translate(0, ${startY + (i * rowHeight)})">
                 <rect class="row-bg" x="0" y="0" width="${customWidth}" height="${rowHeight}" 
                       fill="${color}"/>
-                <text x="25" y="${rowHeight/2 + fontSize/3}" class="item-name">${item.name}</text>
+                <text x="25" y="${rowHeight/2 + fontSize/3}" class="item-name">${name}</text>
                 <line x1="${separatorStartX}" y1="${rowHeight/2}" 
                       x2="${separatorEndX}" y2="${rowHeight/2}" 
                       class="separator" />
                 <text x="${customWidth - 25}" y="${rowHeight/2 + fontSize/3}" 
-                      class="artist-name" text-anchor="end">by ${item.artist.name}</text>
+                      class="artist-name" text-anchor="end">by ${artistName}</text>
               </g>
             `;
           } else {
+            const name = escapeXml(item.name);
             return `
               <g transform="translate(0, ${startY + (i * rowHeight)})">
                 <rect class="row-bg" x="0" y="0" width="${customWidth}" height="${rowHeight}" 
                       fill="${color}"/>
-                <text x="25" y="${rowHeight/2 + fontSize/3}" class="item-name">${item.name}</text>
+                <text x="25" y="${rowHeight/2 + fontSize/3}" class="item-name">${name}</text>
                 <text x="${customWidth - 25}" y="${rowHeight/2 + fontSize/3}" class="plays" text-anchor="end">
                   ${playCount} plays
                 </text>
