@@ -157,7 +157,7 @@ export async function onRequest(context) {
       return new Response(svg, {
         headers: {
           'Content-Type': 'image/svg+xml',
-          'Cache-Control': 'public, max-age=30',
+          'Cache-Control': 'public, max-age=1',
           ...corsHeaders,
         },
       });
