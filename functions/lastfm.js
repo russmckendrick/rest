@@ -17,6 +17,18 @@ export async function onRequest(context) {
     const username = url.searchParams.get('username') || 'russmckendrick';
     const customWidth = parseInt(url.searchParams.get('width')) || 500;
     
+    // Fetch user info to get avatar
+    const userInfoResponse = await fetch(
+      `http://ws.audioscrobbler.com/2.0/?method=user.getinfo&user=${username}&api_key=${context.env.LASTFM_API_KEY}&format=json`
+    );
+
+    if (!userInfoResponse.ok) {
+      throw new Error('Failed to fetch Last.fm user info');
+    }
+
+    const userInfo = await userInfoResponse.json();
+    const userImage = userInfo.user.image.find(img => img.size === 'medium')?.['#text'] || '';
+    
     const method = showAlbums ? 'user.gettopalbums' : 'user.gettopartists';
     
     const lastfmResponse = await fetch(
@@ -50,6 +62,8 @@ export async function onRequest(context) {
     const headerHeight = Math.round(customWidth / 12);
     const logoSize = Math.round(titleSize * 0.8);
     const startY = headerHeight;
+    const avatarSize = Math.round(headerHeight * 0.7);
+    const avatarPadding = Math.round(headerHeight * 0.15);
 
     // Calculate exact height needed
     const totalHeight = startY + (items.length * rowHeight);
@@ -57,6 +71,11 @@ export async function onRequest(context) {
     // Generate SVG
     const svg = `
       <svg xmlns="http://www.w3.org/2000/svg" width="${customWidth}" height="${totalHeight}" viewBox="0 0 ${customWidth} ${totalHeight}">
+        <defs>
+          <clipPath id="avatarClip">
+            <circle cx="${avatarSize/2 + avatarPadding}" cy="${headerHeight/2}" r="${avatarSize/2}"/>
+          </clipPath>
+        </defs>
         <style>
           .title { font: bold ${titleSize}px system-ui, sans-serif; fill: #D6D5C9; }
           .item-name { font: ${fontSize}px system-ui, sans-serif; fill: #D6D5C9; }
@@ -70,8 +89,18 @@ export async function onRequest(context) {
         <!-- Header Background -->
         <rect width="${customWidth}" height="${headerHeight}" fill="#800000"/>
         
+        <!-- User Avatar -->
+        <image 
+          href="${userImage}" 
+          x="${avatarPadding}" 
+          y="${headerHeight/2 - avatarSize/2}" 
+          width="${avatarSize}" 
+          height="${avatarSize}"
+          clip-path="url(#avatarClip)"
+        />
+        
         <!-- Header Group -->
-        <g transform="translate(25, ${headerHeight/2 + titleSize/3})">
+        <g transform="translate(${avatarSize + avatarPadding * 2}, ${headerHeight/2 + titleSize/3})">
           <!-- Last.fm Logo -->
           <path transform="translate(0, -${titleSize/1.2}) scale(${logoSize/25})" 
                 fill="#D6D5C9" 
