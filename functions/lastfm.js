@@ -1,23 +1,19 @@
 // functions/lastfm.js
 export async function onRequest(context) {
-  // Configure CORS headers
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
   };
 
-  // Handle OPTIONS request for CORS
   if (context.request.method === 'OPTIONS') {
-    return new Response(null, {
-      headers: corsHeaders,
-    });
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Fetch top tracks from Last.fm API
+    // Fetch top artists instead of tracks
     const lastfmResponse = await fetch(
-      `http://ws.audioscrobbler.com/2.0/?method=user.gettoptracks&user=russmckendrick&period=7day&limit=10&api_key=${context.env.LASTFM_API_KEY}&format=json`
+      `http://ws.audioscrobbler.com/2.0/?method=user.gettopartists&user=russmckendrick&period=7day&limit=10&api_key=${context.env.LASTFM_API_KEY}&format=json`
     );
 
     if (!lastfmResponse.ok) {
@@ -25,71 +21,42 @@ export async function onRequest(context) {
     }
 
     const data = await lastfmResponse.json();
-    const tracks = data.toptracks.track;
+    const artists = data.topartists.artist;
 
-    // Calculate the maximum playcount for scaling
-    const maxPlays = Math.max(...tracks.map(track => parseInt(track.playcount)));
-    
-    // SVG dimensions and styles
-    const width = 800;
-    const height = 400;
-    const padding = 60;
-    const barHeight = (height - padding * 2) / tracks.length;
-    const barPadding = 5;
+    // SVG dimensions
+    const width = 400;
+    const height = 320;
+    const lineHeight = 28;
+    const startY = 50;
 
     // Generate SVG
     const svg = `
       <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
         <style>
-          .chart-text { font: 12px system-ui, sans-serif; fill: #333; }
-          .chart-title { font: bold 16px system-ui, sans-serif; fill: #1db954; }
-          .chart-bar { fill: #1db954; transition: fill 0.3s; }
-          .chart-bar:hover { fill: #1ed760; }
+          .title { font: bold 16px system-ui, sans-serif; fill: #1db954; }
+          .artist { font: 14px system-ui, sans-serif; fill: #333; }
+          .plays { font: 12px system-ui, sans-serif; fill: #666; }
+          .updated { font: 10px system-ui, sans-serif; fill: #999; }
         </style>
         
         <!-- Title -->
-        <text x="10" y="30" class="chart-title">My Last.fm Top Tracks (Last 7 Days)</text>
+        <text x="20" y="30" class="title">My Last.fm Top Artists (Last 7 Days)</text>
 
-        <!-- Bars and labels -->
-        ${tracks.map((track, i) => {
-          const barWidth = (parseInt(track.playcount) / maxPlays) * (width - padding * 2 - 100);
-          const yPos = padding + (i * barHeight);
-          
-          return `
-            <g transform="translate(0, ${yPos})">
-              <rect
-                x="${padding}"
-                y="${barPadding}"
-                width="${barWidth}"
-                height="${barHeight - barPadding * 2}"
-                class="chart-bar"
-              />
-              <text
-                x="${padding + barWidth + 5}"
-                y="${barHeight / 2 + 5}"
-                class="chart-text"
-              >${track.playcount} plays</text>
-              <text
-                x="${padding - 5}"
-                y="${barHeight / 2 + 5}"
-                class="chart-text"
-                text-anchor="end"
-              >${track.name.substring(0, 30)}${track.name.length > 30 ? '...' : ''}</text>
-            </g>
-          `;
-        }).join('')}
+        <!-- Artists List -->
+        ${artists.map((artist, i) => `
+          <g transform="translate(20, ${startY + (i * lineHeight)})">
+            <text class="artist">${artist.name}</text>
+            <text x="${width - 20}" class="plays" text-anchor="end">${artist.playcount} plays</text>
+          </g>
+        `).join('')}
         
-        <!-- Last updated timestamp -->
-        <text
-          x="${width - 10}"
-          y="${height - 10}"
-          class="chart-text"
-          text-anchor="end"
-        >Updated: ${new Date().toLocaleString()}</text>
+        <!-- Updated timestamp -->
+        <text x="${width - 20}" y="${height - 10}" class="updated" text-anchor="end">
+          Updated: ${new Date().toLocaleString()}
+        </text>
       </svg>
     `;
 
-    // Return the SVG with appropriate headers
     return new Response(svg, {
       headers: {
         'Content-Type': 'image/svg+xml',
