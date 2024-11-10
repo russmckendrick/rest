@@ -53,12 +53,12 @@ export async function onRequest(context) {
 
     // Function to escape XML special characters
     const escapeXml = (unsafe) => {
-      return unsafe.replace(/[<>&'"/g, (c) => {, (c) => {
+      return unsafe.replace(/[<>&'"]/g, (c) => {
         switch (c) {
           case '<': return '&lt;';
           case '>': return '&gt;';
           case '&': return '&amp;';
-          case "'": return '&apos;';
+          case '\'': return '&apos;';
           case '"': return '&quot;';
         }
       });
