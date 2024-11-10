@@ -52,15 +52,6 @@ Base URL: `https://www.russ.rest/lastfm`
 ![Top artists](https://www.russ.rest/lastfm?artists&width=1200)
 ```
 
-## Development
-
-This project uses Cloudflare Workers. To set it up locally:
-
-1. Clone the repository
-2. Install dependencies: `npm install`
-3. Configure your Last.fm API key in your environment variables
-4. Run locally: `npm run dev`
-
 ## License
 
 MIT License - Feel free to use and modify as needed.
