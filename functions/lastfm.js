@@ -17,8 +17,8 @@ export async function onRequest(context) {
     
     // Get custom width from URL params, default to 500
     const customWidth = parseInt(url.searchParams.get('width')) || 500;
-    // Calculate height proportionally
-    const height = Math.round(customWidth * 0.8);
+    // Calculate height using new ratio (roughly 2:1)
+    const height = Math.round(customWidth * 0.52);
     
     const method = showAlbums ? 'user.gettopalbums' : 'user.gettopartists';
     
@@ -37,10 +37,10 @@ export async function onRequest(context) {
     const maxPlays = Math.max(...items.map(item => parseInt(item.playcount)));
     
     // Calculate proportional sizes based on custom width
-    const fontSize = Math.max(12, Math.round(customWidth / 31.25)); // Scale font size with width
+    const fontSize = Math.max(12, Math.round(customWidth / 31.25));
     const titleSize = Math.max(16, Math.round(customWidth / 20.83));
-    const rowHeight = Math.max(28, Math.round(customWidth / 13.89));
-    const startY = Math.round(customWidth / 7.14);
+    const rowHeight = Math.max(24, Math.round(customWidth / 16.67));
+    const startY = Math.round(customWidth / 10);
     const headerHeight = Math.round(customWidth / 10);
 
     // Generate SVG
@@ -57,15 +57,13 @@ export async function onRequest(context) {
           .title { font: bold ${titleSize}px system-ui, sans-serif; fill: #D6D5C9; }
           .item-name { font: ${fontSize}px system-ui, sans-serif; fill: #D6D5C9; }
           .artist-name { font: ${fontSize}px system-ui, sans-serif; fill: #B9BAA3; }
+          .plays { font: ${fontSize}px system-ui, sans-serif; fill: #B9BAA3; }
           .row-bg { transition: opacity 0.3s; }
           .row-bg:hover { opacity: 0.8; }
         </style>
         
         <!-- Background -->
         <rect width="${customWidth}" height="${height}" fill="#0A100D"/>
-        
-        <!-- Thin separator line -->
-        <rect width="${customWidth}" height="1" fill="#0A100D"/>
         
         <!-- Header Background -->
         <rect width="${customWidth}" height="${headerHeight}" fill="url(#headerGrad)"/>
@@ -85,7 +83,7 @@ export async function onRequest(context) {
               <g transform="translate(0, ${startY + (i * rowHeight)})">
                 <rect class="row-bg" x="0" y="0" width="${customWidth}" height="${rowHeight}" 
                       fill="#A22C29" opacity="${opacity}"/>
-                <text x="25" y="${rowHeight/2}" class="item-name">
+                <text x="25" y="${rowHeight/2 + fontSize/3}" class="item-name">
                   ${item.name} by ${item.artist.name}
                 </text>
               </g>
@@ -95,8 +93,8 @@ export async function onRequest(context) {
               <g transform="translate(0, ${startY + (i * rowHeight)})">
                 <rect class="row-bg" x="0" y="0" width="${customWidth}" height="${rowHeight}" 
                       fill="#A22C29" opacity="${opacity}"/>
-                <text x="25" y="${rowHeight/2}" class="item-name">${item.name}</text>
-                <text x="${customWidth - 25}" y="${rowHeight/2}" class="plays" text-anchor="end">
+                <text x="25" y="${rowHeight/2 + fontSize/3}" class="item-name">${item.name}</text>
+                <text x="${customWidth - 25}" y="${rowHeight/2 + fontSize/3}" class="plays" text-anchor="end">
                   ${playCount} plays
                 </text>
               </g>
