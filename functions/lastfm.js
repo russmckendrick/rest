@@ -27,8 +27,22 @@ export async function onRequest(context) {
     }
 
     const userInfo = await userInfoResponse.json();
-    const userImage = userInfo.user.image.find(img => img.size === 'medium')?.['#text'] || '';
+    const userImageUrl = userInfo.user.image.find(img => img.size === 'medium')?.['#text'] || '';
     
+    // Fetch and convert avatar to base64
+    let avatarBase64 = '';
+    if (userImageUrl) {
+      try {
+        const imageResponse = await fetch(userImageUrl);
+        if (imageResponse.ok) {
+          const imageBuffer = await imageResponse.arrayBuffer();
+          avatarBase64 = `data:image/jpeg;base64,${Buffer.from(imageBuffer).toString('base64')}`;
+        }
+      } catch (error) {
+        console.error('Failed to fetch avatar:', error);
+      }
+    }
+
     const method = showAlbums ? 'user.gettopalbums' : 'user.gettopartists';
     
     const lastfmResponse = await fetch(
@@ -90,14 +104,16 @@ export async function onRequest(context) {
         <rect width="${customWidth}" height="${headerHeight}" fill="#800000"/>
         
         <!-- User Avatar -->
+        ${avatarBase64 ? `
         <image 
-          href="${userImage}" 
+          href="${avatarBase64}" 
           x="${avatarPadding}" 
           y="${headerHeight/2 - avatarSize/2}" 
           width="${avatarSize}" 
           height="${avatarSize}"
           clip-path="url(#avatarClip)"
         />
+        ` : ''}
         
         <!-- Header Group -->
         <g transform="translate(${avatarSize + avatarPadding * 2}, ${headerHeight/2 + titleSize/3})">
