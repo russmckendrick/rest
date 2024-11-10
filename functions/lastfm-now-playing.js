@@ -1,4 +1,4 @@
-// functions/lastfmnowplaying.js
+// functions/lastfm-now-playing.js
 export async function onRequest(context) {
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -161,7 +161,7 @@ export async function onRequest(context) {
         </g>
       </svg>
     `;
-    
+
     return new Response(svg, {
       headers: {
         'Content-Type': 'image/svg+xml',
