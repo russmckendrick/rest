@@ -14,13 +14,13 @@ export async function onRequest(context) {
     const url = new URL(context.request.url);
     const showAlbums = url.searchParams.has('albums');
     const showArtists = url.searchParams.has('artists') || (!showAlbums);
-    
+    const username = url.searchParams.get('username') || 'russmckendrick';
     const customWidth = parseInt(url.searchParams.get('width')) || 500;
     
     const method = showAlbums ? 'user.gettopalbums' : 'user.gettopartists';
     
     const lastfmResponse = await fetch(
-      `http://ws.audioscrobbler.com/2.0/?method=${method}&user=russmckendrick&period=7day&limit=10&api_key=${context.env.LASTFM_API_KEY}&format=json`
+      `http://ws.audioscrobbler.com/2.0/?method=${method}&user=${username}&period=7day&limit=10&api_key=${context.env.LASTFM_API_KEY}&format=json`
     );
 
     if (!lastfmResponse.ok) {
@@ -49,7 +49,7 @@ export async function onRequest(context) {
           .item-name { font: ${fontSize}px system-ui, sans-serif; fill: #D6D5C9; }
           .artist-name { font: ${fontSize}px system-ui, sans-serif; fill: #B9BAA3; }
           .plays { font: ${fontSize}px system-ui, sans-serif; fill: #B9BAA3; }
-          .dots { font: ${fontSize}px system-ui, sans-serif; fill: #666666; letter-spacing: 2px; }
+          .separator { stroke: #666666; stroke-width: 0.5; stroke-dasharray: 2 2; }
           .row-bg { transition: opacity 0.3s; }
           .row-bg:hover { opacity: 0.8; }
         </style>
@@ -84,22 +84,22 @@ export async function onRequest(context) {
           const playCount = parseInt(item.playcount);
           
           if (showAlbums) {
-            // Calculate number of dots needed (based on available space)
             const textWidth = item.name.length * (fontSize * 0.6); // Approximate width of album name
             const artistWidth = (item.artist.name.length + 3) * (fontSize * 0.6); // Width of "by Artist"
-            const availableSpace = customWidth - 50 - textWidth - artistWidth;
-            const numDots = Math.max(3, Math.floor(availableSpace / (fontSize * 0.5)));
-            const dots = '.'.repeat(numDots);
+            const padding = 50; // Total padding (left + right)
+            const separatorStartX = textWidth + 35;
+            const separatorEndX = customWidth - artistWidth - 35;
 
             return `
               <g transform="translate(0, ${startY + (i * rowHeight)})">
                 <rect class="row-bg" x="0" y="0" width="${customWidth}" height="${rowHeight}" 
                       fill="${color}"/>
                 <text x="25" y="${rowHeight/2 + fontSize/3}" class="item-name">${item.name}</text>
-                <text x="25" y="${rowHeight/2 + fontSize/3}" class="dots" text-anchor="start">
-                  <tspan x="${textWidth + 35}" class="dots">${dots}</tspan>
-                  <tspan x="${customWidth - 25}" class="artist-name" text-anchor="end">by ${item.artist.name}</tspan>
-                </text>
+                <line x1="${separatorStartX}" y1="${rowHeight/2}" 
+                      x2="${separatorEndX}" y2="${rowHeight/2}" 
+                      class="separator" />
+                <text x="${customWidth - 25}" y="${rowHeight/2 + fontSize/3}" 
+                      class="artist-name" text-anchor="end">by ${item.artist.name}</text>
               </g>
             `;
           } else {
