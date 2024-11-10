@@ -85,6 +85,7 @@ export async function onRequest(context) {
           };
           
           const color = `rgb(${currentColor.r}, ${currentColor.g}, ${currentColor.b})`;
+          const playCount = parseInt(item.playcount);
           
           if (showAlbums) {
             return `
