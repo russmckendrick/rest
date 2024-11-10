@@ -15,6 +15,11 @@ export async function onRequest(context) {
     const showAlbums = url.searchParams.has('albums');
     const showArtists = url.searchParams.has('artists') || (!showAlbums);
     
+    // Get custom width from URL params, default to 500
+    const customWidth = parseInt(url.searchParams.get('width')) || 500;
+    // Calculate height proportionally
+    const height = Math.round(customWidth * 0.8);
+    
     const method = showAlbums ? 'user.gettopalbums' : 'user.gettopartists';
     
     const lastfmResponse = await fetch(
@@ -30,16 +35,17 @@ export async function onRequest(context) {
 
     // Get max plays for color scaling
     const maxPlays = Math.max(...items.map(item => parseInt(item.playcount)));
-
-    // SVG dimensions
-    const width = 500;
-    const height = 400;
-    const rowHeight = 36;
-    const startY = 70;
+    
+    // Calculate proportional sizes based on custom width
+    const fontSize = Math.max(12, Math.round(customWidth / 31.25)); // Scale font size with width
+    const titleSize = Math.max(16, Math.round(customWidth / 20.83));
+    const rowHeight = Math.max(28, Math.round(customWidth / 13.89));
+    const startY = Math.round(customWidth / 7.14);
+    const headerHeight = Math.round(customWidth / 10);
 
     // Generate SVG
     const svg = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+      <svg xmlns="http://www.w3.org/2000/svg" width="${customWidth}" height="${height}" viewBox="0 0 ${customWidth} ${height}">
         <defs>
           <linearGradient id="headerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" style="stop-color:#A22C29"/>
@@ -48,22 +54,24 @@ export async function onRequest(context) {
         </defs>
         
         <style>
-          .title { font: bold 24px system-ui, sans-serif; fill: #D6D5C9; }
-          .item-name { font: 16px system-ui, sans-serif; fill: #D6D5C9; }
-          .artist-name { font: 14px system-ui, sans-serif; fill: #B9BAA3; }
-          .plays { font: 14px system-ui, sans-serif; fill: #B9BAA3; }
+          .title { font: bold ${titleSize}px system-ui, sans-serif; fill: #D6D5C9; }
+          .item-name { font: ${fontSize}px system-ui, sans-serif; fill: #D6D5C9; }
+          .artist-name { font: ${fontSize}px system-ui, sans-serif; fill: #B9BAA3; }
           .row-bg { transition: opacity 0.3s; }
           .row-bg:hover { opacity: 0.8; }
         </style>
         
         <!-- Background -->
-        <rect width="${width}" height="${height}" fill="#0A100D"/>
+        <rect width="${customWidth}" height="${height}" fill="#0A100D"/>
+        
+        <!-- Thin separator line -->
+        <rect width="${customWidth}" height="1" fill="#0A100D"/>
         
         <!-- Header Background -->
-        <rect width="${width}" height="50" fill="url(#headerGrad)"/>
+        <rect width="${customWidth}" height="${headerHeight}" fill="url(#headerGrad)"/>
         
         <!-- Title -->
-        <text x="25" y="35" class="title">
+        <text x="25" y="${headerHeight/1.5}" class="title">
           My Last.fm Top ${showAlbums ? 'Albums' : 'Artists'}
         </text>
 
@@ -75,22 +83,20 @@ export async function onRequest(context) {
           if (showAlbums) {
             return `
               <g transform="translate(0, ${startY + (i * rowHeight)})">
-                <rect class="row-bg" x="0" y="0" width="${width}" height="${rowHeight}" 
+                <rect class="row-bg" x="0" y="0" width="${customWidth}" height="${rowHeight}" 
                       fill="#A22C29" opacity="${opacity}"/>
-                <text x="25" y="20" class="item-name">${item.name}</text>
-                <text x="25" y="35" class="artist-name">${item.artist.name}</text>
-                <text x="${width - 25}" y="27" class="plays" text-anchor="end">
-                  ${playCount} plays
+                <text x="25" y="${rowHeight/2}" class="item-name">
+                  ${item.name} by ${item.artist.name}
                 </text>
               </g>
             `;
           } else {
             return `
               <g transform="translate(0, ${startY + (i * rowHeight)})">
-                <rect class="row-bg" x="0" y="0" width="${width}" height="${rowHeight}" 
+                <rect class="row-bg" x="0" y="0" width="${customWidth}" height="${rowHeight}" 
                       fill="#A22C29" opacity="${opacity}"/>
-                <text x="25" y="25" class="item-name">${item.name}</text>
-                <text x="${width - 25}" y="25" class="plays" text-anchor="end">
+                <text x="25" y="${rowHeight/2}" class="item-name">${item.name}</text>
+                <text x="${customWidth - 25}" y="${rowHeight/2}" class="plays" text-anchor="end">
                   ${playCount} plays
                 </text>
               </g>
