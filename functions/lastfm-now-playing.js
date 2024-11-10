@@ -73,6 +73,12 @@ export async function onRequest(context) {
     const headerHeight = Math.round(height * 0.3); // Header height
     const logoSize = Math.max(20, Math.round(height * 0.13)); // Logo size that scales with width
 
+    // Add these variables before the SVG template
+    const isNowPlaying = track['@attr']?.nowplaying === 'true';
+    const trackName = escapeXml(track.name);
+    const artistName = escapeXml(track.artist['#text']);
+    const albumName = escapeXml(track.album['#text']);
+
     const svg = `
       <svg xmlns="http://www.w3.org/2000/svg" width="${customWidth}" height="${height}" viewBox="0 0 ${customWidth} ${height}">
         <defs>
