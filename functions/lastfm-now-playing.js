@@ -70,7 +70,7 @@ export async function onRequest(context) {
     const contentPadding = Math.round(height * 0.1);
     const titleSize = Math.max(16, Math.round(height * 0.15));
     const fontSize = Math.max(12, Math.round(height * 0.08));
-    const headerHeight = Math.round(height * 0.3); // Header height
+    const headerHeight = Math.round(height * 0.5); // Header height
     const logoSize = Math.max(20, Math.round(height * 0.13)); // Logo size that scales with width
 
     // Add these variables before the SVG template
