@@ -70,7 +70,7 @@ export async function onRequest(context) {
     const contentPadding = Math.round(height * 0.1);
     const titleSize = Math.max(16, Math.round(height * 0.15));
     const fontSize = Math.max(12, Math.round(height * 0.08));
-    const headerHeight = Math.round(height * 0.5); // Header height
+    const headerHeight = Math.round(height * 0.3); // Header height
     const logoSize = Math.max(20, Math.round(height * 0.13)); // Logo size that scales with width
 
     // Add these variables before the SVG template
@@ -106,7 +106,7 @@ export async function onRequest(context) {
           .info { font: bold ${fontSize * 1.5}px system-ui, sans-serif; fill: #D6D5C9; filter: url(#shadow); letter-spacing: -0.5px; }
           .secondary { font: ${fontSize * 1.2}px system-ui, sans-serif; fill: #B9BAA3; filter: url(#shadow); }
           .now-playing { font: bold ${fontSize}px system-ui, sans-serif; fill: #FF8888; filter: url(#shadow); animation: pulse 2s infinite; }
-          .header-text { font: bold ${fontSize * 1.3}px system-ui, sans-serif; fill: #D6D5C9; filter: url(#shadow); }
+          .header-text { font: bold ${fontSize * 1.6}px system-ui, sans-serif; fill: #D6D5C9; filter: url(#shadow); }
           @keyframes pulse {
             0% { opacity: 1; }
             50% { opacity: 0.6; }
