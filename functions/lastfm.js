@@ -35,8 +35,12 @@ export async function onRequest(context) {
       try {
         const imageResponse = await fetch(userImageUrl);
         if (imageResponse.ok) {
-          const imageBuffer = await imageResponse.arrayBuffer();
-          avatarBase64 = `data:image/jpeg;base64,${Buffer.from(imageBuffer).toString('base64')}`;
+          const blob = await imageResponse.blob();
+          const reader = new FileReader();
+          avatarBase64 = await new Promise((resolve) => {
+            reader.onloadend = () => resolve(reader.result);
+            reader.readAsDataURL(blob);
+          });
         }
       } catch (error) {
         console.error('Failed to fetch avatar:', error);
