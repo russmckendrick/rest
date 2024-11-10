@@ -1,4 +1,4 @@
-// functions/lastfmnowplaying.js
+// functions/lastfmnowplaying2.js
 export async function onRequest(context) {
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
