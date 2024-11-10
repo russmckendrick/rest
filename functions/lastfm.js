@@ -14,8 +14,8 @@ export async function onRequest(context) {
     const url = new URL(context.request.url);
     const showAlbums = url.searchParams.has('albums');
     const showArtists = url.searchParams.has('artists') || (!showAlbums);
-    const username = url.searchParams.get('username') || 'RussMckendrick';
-    const customWidth = parseInt(url.searchParams.get('width')) || 800;
+    const username = url.searchParams.get('username') || 'russmckendrick';
+    const customWidth = parseInt(url.searchParams.get('width')) || 500;
     
     // Fetch user info to get avatar
     const userInfoResponse = await fetch(
@@ -29,18 +29,18 @@ export async function onRequest(context) {
     const userInfo = await userInfoResponse.json();
     const userImageUrl = userInfo.user.image.find(img => img.size === 'medium')?.['#text'] || '';
     
-    // Fetch and convert avatar to base64
-    let avatarBase64 = '';
+    // Fetch and convert avatar image
+    let avatarDataUri = '';
     if (userImageUrl) {
       try {
         const imageResponse = await fetch(userImageUrl);
         if (imageResponse.ok) {
-          const blob = await imageResponse.blob();
-          const reader = new FileReader();
-          avatarBase64 = await new Promise((resolve) => {
-            reader.onloadend = () => resolve(reader.result);
-            reader.readAsDataURL(blob);
-          });
+          const imageArrayBuffer = await imageResponse.arrayBuffer();
+          const imageBase64 = btoa(
+            String.fromCharCode(...new Uint8Array(imageArrayBuffer))
+          );
+          const contentType = imageResponse.headers.get('content-type') || 'image/jpeg';
+          avatarDataUri = `data:${contentType};base64,${imageBase64}`;
         }
       } catch (error) {
         console.error('Failed to fetch avatar:', error);
@@ -108,16 +108,32 @@ export async function onRequest(context) {
         <rect width="${customWidth}" height="${headerHeight}" fill="#800000"/>
         
         <!-- User Avatar -->
-        ${avatarBase64 ? `
+        ${avatarDataUri ? `
         <image 
-          href="${avatarBase64}" 
+          href="${avatarDataUri}" 
           x="${avatarPadding}" 
           y="${headerHeight/2 - avatarSize/2}" 
           width="${avatarSize}" 
           height="${avatarSize}"
           clip-path="url(#avatarClip)"
         />
-        ` : ''}
+        ` : `
+        <circle 
+          cx="${avatarSize/2 + avatarPadding}" 
+          cy="${headerHeight/2}" 
+          r="${avatarSize/2}"
+          fill="#600000"
+        />
+        <text 
+          x="${avatarSize/2 + avatarPadding}" 
+          y="${headerHeight/2}"
+          font-family="system-ui, sans-serif"
+          font-size="${avatarSize/2}px"
+          fill="#D6D5C9"
+          text-anchor="middle"
+          dominant-baseline="middle"
+        >${username.slice(0, 2).toUpperCase()}</text>
+        `}
         
         <!-- Header Group -->
         <g transform="translate(${avatarSize + avatarPadding * 2}, ${headerHeight/2 + titleSize/3})">
