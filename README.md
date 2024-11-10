@@ -2,7 +2,7 @@
 
 A collection of serverless functions that generate dynamic content, hosted on Cloudflare Workers.
 
-## Last.fm Integration
+## Last.fm Weekly Artists and Albums
 
 Generate SVG visualizations of your Last.fm listening history. The function supports displaying both top artists and albums from the last week.
 

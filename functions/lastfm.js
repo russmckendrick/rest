@@ -14,8 +14,8 @@ export async function onRequest(context) {
     const url = new URL(context.request.url);
     const showAlbums = url.searchParams.has('albums');
     const showArtists = url.searchParams.has('artists') || (!showAlbums);
-    const username = url.searchParams.get('username') || 'russmckendrick';
-    const customWidth = parseInt(url.searchParams.get('width')) || 500;
+    const username = url.searchParams.get('username') || 'RussMckendrick';
+    const customWidth = parseInt(url.searchParams.get('width')) || 800;
     
     // Fetch user info to get avatar
     const userInfoResponse = await fetch(
