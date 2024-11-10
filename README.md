@@ -22,18 +22,18 @@ Base URL: `https://www.russ.rest/lastfm`
 ##### Top Artists
 
 ```markdown
-![Top artists in the last week](https://www.russ.rest/lastfm?artists&username=RussMckendrick&width=1000)
+![Top artists in the last week](https://www.russ.rest/lastfm?artists&username=RussMckendrick&width=900)
 ```
 
-![Top artists in the last week](https://www.russ.rest/lastfm?artists&username=RussMckendrick&width=1000)
+![Top artists in the last week](https://www.russ.rest/lastfm?artists&username=RussMckendrick&width=900)
 
 ##### Top Albums
 
 ```markdown
-![Top albums in the last week](https://www.russ.rest/lastfm?albums&username=RussMckendrick&width=1000)
+![Top albums in the last week](https://www.russ.rest/lastfm?albums&username=RussMckendrick&width=900)
 ```
 
-![Top albums in the last week](https://www.russ.rest/lastfm?albums&username=RussMckendrick&width=1000)
+![Top albums in the last week](https://www.russ.rest/lastfm?albums&username=RussMckendrick&width=900)
 
 ### Customization Examples
 
