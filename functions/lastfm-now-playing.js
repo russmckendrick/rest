@@ -14,9 +14,12 @@ export async function onRequest(context) {
     const username = url.searchParams.get('username') || 'russmckendrick';
     const customWidth = parseInt(url.searchParams.get('width')) || 500;
     
-    // Fetch recent tracks
+    // Calculate timestamp from 10 years ago
+    const tenYearsAgo = Math.floor(Date.now() / 1000) - (10 * 365 * 24 * 60 * 60);
+    
+    // Fetch recent tracks with 'from' parameter
     const recentTracksResponse = await fetch(
-      `http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${username}&limit=1&api_key=${context.env.LASTFM_API_KEY}&format=json`
+      `http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${username}&limit=1&from=${tenYearsAgo}&api_key=${context.env.LASTFM_API_KEY}&format=json`
     );
 
     if (!recentTracksResponse.ok) {
@@ -27,7 +30,7 @@ export async function onRequest(context) {
     const track = recentTracks.recenttracks.track[0];
     
     if (!track) {
-      throw new Error('No recent tracks found');
+      throw new Error('No tracks found in the last 10 years');
     }
 
     // Get album art URL from track info
