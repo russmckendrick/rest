@@ -46,10 +46,10 @@ export async function onRequest(context) {
       try {
         const imageResponse = await fetch(albumImageUrl);
         if (imageResponse.ok) {
-          const imageBuffer = await imageResponse.arrayBuffer();
-          const base64String = btoa(
-            String.fromCharCode.apply(null, new Uint8Array(imageBuffer))
-          );
+          // Get the image data as an ArrayBuffer
+          const imageData = await imageResponse.arrayBuffer();
+          // Convert ArrayBuffer to Base64
+          const base64String = btoa(String.fromCharCode(...new Uint8Array(imageData)));
           const contentType = imageResponse.headers.get('content-type') || 'image/jpeg';
           albumArtDataUri = `data:${contentType};base64,${base64String}`;
         }
