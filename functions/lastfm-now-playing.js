@@ -13,15 +13,16 @@ export async function onRequest(context) {
     const url = new URL(context.request.url);
     const username = url.searchParams.get('username') || 'russmckendrick';
     const customWidth = parseInt(url.searchParams.get('width')) || 500;
+    const debug = url.searchParams.has('debug');
     
-    // Calculate timestamp from 10 years ago
-    const tenYearsAgo = Math.floor(Date.now() / 1000) - (10 * 365 * 24 * 60 * 60);
+    // Calculate timestamp from 20 years ago
+    const tenYearsAgo = Math.floor(Date.now() / 1000) - (20 * 365 * 24 * 60 * 60);
     
     // Debug array to collect information
     const debugInfo = [];
     
     // Fetch recent tracks with 'from' parameter
-    debugInfo.push('Fetching tracks...');
+    if (debug) debugInfo.push('Fetching tracks...');
     const recentTracksResponse = await fetch(
       `http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${username}&limit=1&from=${tenYearsAgo}&api_key=${context.env.LASTFM_API_KEY}&format=json`
     );
@@ -37,31 +38,32 @@ export async function onRequest(context) {
       throw new Error('No tracks found in the last 10 years');
     }
 
-    // Get album art URL from track info
-    debugInfo.push('Finding album art URL...');
+    // Get album art URL from track info and ensure we're getting the largest available image
+    if (debug) debugInfo.push('Finding album art URL...');
     const albumImageUrl = track.image
       .sort((a, b) => {
         const sizeOrder = { extralarge: 4, large: 3, medium: 2, small: 1 };
         return sizeOrder[b.size] - sizeOrder[a.size];
       })[0]?.['#text'];
     
-    debugInfo.push(`Album image URL: ${albumImageUrl || 'none'}`);
+    if (debug) debugInfo.push(`Album image URL: ${albumImageUrl || 'none'}`);
     
     // Convert album art to base64
     let albumArtDataUri = '';
     if (albumImageUrl) {
       try {
-        debugInfo.push('Fetching album art...');
+        if (debug) debugInfo.push('Fetching album art...');
         const imageResponse = await fetch(albumImageUrl);
-        debugInfo.push(`Image response status: ${imageResponse.status}`);
+        if (debug) debugInfo.push(`Image response status: ${imageResponse.status}`);
         
         if (imageResponse.ok) {
-          debugInfo.push('Converting image to ArrayBuffer...');
+          if (debug) debugInfo.push('Converting image to ArrayBuffer...');
           const imageData = await imageResponse.arrayBuffer();
-          debugInfo.push(`ArrayBuffer size: ${imageData.byteLength} bytes`);
+          if (debug) debugInfo.push(`ArrayBuffer size: ${imageData.byteLength} bytes`);
           
-          debugInfo.push('Converting to base64...');
+          if (debug) debugInfo.push('Converting to base64...');
           const uint8Array = new Uint8Array(imageData);
+          
           // Convert to base64 in chunks to avoid call stack size exceeded
           const chunks = [];
           const chunkSize = 8192;
@@ -71,20 +73,23 @@ export async function onRequest(context) {
           }
           const base64String = btoa(chunks.join(''));
           const contentType = imageResponse.headers.get('content-type') || 'image/jpeg';
-          debugInfo.push(`Content-Type: ${contentType}`);
-          debugInfo.push(`Base64 length: ${base64String.length}`);
+          
+          if (debug) {
+            debugInfo.push(`Content-Type: ${contentType}`);
+            debugInfo.push(`Base64 length: ${base64String.length}`);
+          }
           
           albumArtDataUri = `data:${contentType};base64,${base64String}`;
-          debugInfo.push('Data URI created successfully');
+          if (debug) debugInfo.push('Data URI created successfully');
         } else {
-          debugInfo.push(`Failed to fetch image: ${imageResponse.status}`);
+          if (debug) debugInfo.push(`Failed to fetch image: ${imageResponse.status}`);
         }
       } catch (error) {
-        debugInfo.push(`Error fetching album art: ${error.message}`);
+        if (debug) debugInfo.push(`Error fetching album art: ${error.message}`);
         console.error('Failed to fetch album art:', error);
       }
     } else {
-      debugInfo.push('No album image URL found');
+      if (debug) debugInfo.push('No album image URL found');
     }
 
     // Function to escape XML special characters
@@ -101,7 +106,7 @@ export async function onRequest(context) {
     };
 
     // Calculate dimensions
-    const height = Math.round(customWidth * 0.3);
+    const height = Math.round(customWidth * 0.3); // 3:1 aspect ratio
     const artSize = height;
     const contentPadding = Math.round(height * 0.1);
     const titleSize = Math.max(16, Math.round(height * 0.15));
@@ -114,13 +119,15 @@ export async function onRequest(context) {
     const albumName = escapeXml(track.album['#text']);
 
     const svg = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="${customWidth}" height="${height}" viewBox="0 0 ${customWidth} ${height}">
+      <svg xmlns="http://www.w3.org/2000/svg" width="${customWidth}" height="${debug ? height + 200 : height}" viewBox="0 0 ${customWidth} ${debug ? height + 200 : height}">
         <defs>
+          <!-- Background gradient -->
           <linearGradient id="overlay" x1="0" y1="0" x2="1" y2="0">
             <stop offset="0%" stop-color="#800000" stop-opacity="0.95"/>
             <stop offset="100%" stop-color="#800000" stop-opacity="0.85"/>
           </linearGradient>
           
+          <!-- Text shadow filter -->
           <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
             <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
             <feOffset dx="1" dy="1" result="offsetblur"/>
@@ -138,16 +145,9 @@ export async function onRequest(context) {
           .info { font: bold ${fontSize * 1.5}px system-ui, sans-serif; fill: #D6D5C9; filter: url(#shadow); letter-spacing: -0.5px; }
           .secondary { font: ${fontSize * 1.2}px system-ui, sans-serif; fill: #B9BAA3; filter: url(#shadow); }
           .header-text { font: bold ${fontSize * 1.8}px system-ui, sans-serif; fill: #D6D5C9; filter: url(#shadow); }
-          .debug { font: ${fontSize}px monospace; fill: #FF0000; }
+          ${debug ? '.debug { font: ${fontSize}px monospace; fill: #FF0000; }' : ''}
         </style>
         
-        <!-- Debug Information -->
-        <g transform="translate(10, ${height + 20})">
-          ${debugInfo.map((info, i) => 
-            `<text x="0" y="${i * 20}" class="debug">${escapeXml(info)}</text>`
-          ).join('')}
-        </g>
-
         <!-- Background Image with Album Art -->
         ${albumArtDataUri ? `
         <image 
@@ -197,6 +197,15 @@ export async function onRequest(context) {
           <text class="secondary" y="${fontSize * 2.5}">by ${artistName}</text>
           <text class="secondary" y="${fontSize * 4.5}">from ${albumName}</text>
         </g>
+
+        ${debug ? `
+        <!-- Debug Information -->
+        <g transform="translate(10, ${height + 20})">
+          ${debugInfo.map((info, i) => 
+            `<text x="0" y="${i * 20}" class="debug">${escapeXml(info)}</text>`
+          ).join('')}
+        </g>
+        ` : ''}
       </svg>
     `;
 
