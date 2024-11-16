@@ -62,7 +62,14 @@ export async function onRequest(context) {
           
           debugInfo.push('Converting to base64...');
           const uint8Array = new Uint8Array(imageData);
-          const base64String = btoa(String.fromCharCode(...uint8Array));
+          // Convert to base64 in chunks to avoid call stack size exceeded
+          const chunks = [];
+          const chunkSize = 8192;
+          for (let i = 0; i < uint8Array.length; i += chunkSize) {
+            const chunk = uint8Array.slice(i, i + chunkSize);
+            chunks.push(String.fromCharCode.apply(null, chunk));
+          }
+          const base64String = btoa(chunks.join(''));
           const contentType = imageResponse.headers.get('content-type') || 'image/jpeg';
           debugInfo.push(`Content-Type: ${contentType}`);
           debugInfo.push(`Base64 length: ${base64String.length}`);
