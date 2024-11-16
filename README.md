@@ -58,20 +58,21 @@ Grabs the last thing you scrobbled on LastFM and displays it with cover art.
 
 ### Usage
 
-Base URL: `https://www.russ.rest/lastfm-now-playing`
+Base URL: `https://www.russ.rest/lastfm-last-played`
 
 #### Parameters
 
 - `username` - Last.fm username (default: [RussMckendrick](http://last.fm/user/RussMckendrick))
 - `width` - Width of the generated SVG in pixels (default: 500)
+- `debug` - Prints out some debug items
 
 #### Example
 
 ```markdown
-![Last Played](https://www.russ.rest/lastfm-now-playing?username=RussMcKendrick&width=900)
+![Last Played](https://www.russ.rest/lastfm-last-played?username=RussMcKendrick&width=900)
 ```
 
-![Last Played](https://www.russ.rest/lastfm-now-playing?username=RussMcKendrick&width=900)
+![Last Played](https://www.russ.rest/lastfm-last-played?username=RussMcKendrick&width=900)
 
 
 ## License
