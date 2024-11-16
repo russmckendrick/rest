@@ -33,9 +33,12 @@ export async function onRequest(context) {
       throw new Error('No tracks found in the last 10 years');
     }
 
-    // Get album art URL from track info
-    const albumImageUrl = track.image.find(img => img.size === 'extralarge')?.['#text'] || 
-                         track.image.find(img => img.size === 'large')?.['#text'];
+    // Get album art URL from track info and ensure we're getting the largest available image
+    const albumImageUrl = track.image
+      .sort((a, b) => {
+        const sizeOrder = { extralarge: 4, large: 3, medium: 2, small: 1 };
+        return sizeOrder[b.size] - sizeOrder[a.size];
+      })[0]?.['#text'];
     
     // Convert album art to base64
     let albumArtDataUri = '';
@@ -43,8 +46,8 @@ export async function onRequest(context) {
       try {
         const imageResponse = await fetch(albumImageUrl);
         if (imageResponse.ok) {
-          const imageData = await imageResponse.arrayBuffer();
-          const base64String = btoa(String.fromCharCode(...new Uint8Array(imageData)));
+          const imageBuffer = await imageResponse.arrayBuffer();
+          const base64String = Buffer.from(imageBuffer).toString('base64');
           const contentType = imageResponse.headers.get('content-type') || 'image/jpeg';
           albumArtDataUri = `data:${contentType};base64,${base64String}`;
         }
@@ -72,10 +75,9 @@ export async function onRequest(context) {
     const contentPadding = Math.round(height * 0.1);
     const titleSize = Math.max(16, Math.round(height * 0.15));
     const fontSize = Math.max(12, Math.round(height * 0.08));
-    const headerHeight = Math.round(height * 0.3); // Header height
-    const logoSize = Math.max(20, Math.round(height * 0.13)); // Logo size that scales with width
+    const headerHeight = Math.round(height * 0.3);
+    const logoSize = Math.max(20, Math.round(height * 0.13));
 
-    const isNowPlaying = track['@attr']?.nowplaying === 'true';
     const trackName = escapeXml(track.name);
     const artistName = escapeXml(track.artist['#text']);
     const albumName = escapeXml(track.album['#text']);
@@ -106,13 +108,7 @@ export async function onRequest(context) {
         <style>
           .info { font: bold ${fontSize * 1.5}px system-ui, sans-serif; fill: #D6D5C9; filter: url(#shadow); letter-spacing: -0.5px; }
           .secondary { font: ${fontSize * 1.2}px system-ui, sans-serif; fill: #B9BAA3; filter: url(#shadow); }
-          .now-playing { font: bold ${fontSize}px system-ui, sans-serif; fill: #FF8888; filter: url(#shadow); animation: pulse 2s infinite; }
           .header-text { font: bold ${fontSize * 1.8}px system-ui, sans-serif; fill: #D6D5C9; filter: url(#shadow); }
-          @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.6; }
-            100% { opacity: 1; }
-          }
         </style>
         
         <!-- Background Image with Album Art -->
@@ -160,8 +156,6 @@ export async function onRequest(context) {
         <!-- Content (Right Side) -->
         <g transform="translate(${artSize + contentPadding * 1.5}, ${height/2})">
           <!-- Track Information -->
-          ${isNowPlaying ? `
-          <text class="now-playing" y="-${fontSize * 1.5}">♫ PLAYING NOW</text>` : ''}
           <text class="info" y="0">${trackName}</text>
           <text class="secondary" y="${fontSize * 2.5}">by ${artistName}</text>
           <text class="secondary" y="${fontSize * 4.5}">from ${albumName}</text>
