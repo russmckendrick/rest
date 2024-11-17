@@ -3,7 +3,7 @@ export async function onRequest(context) {
     const url = new URL(context.request.url);
     
     // List of valid function paths
-    const validPaths = ['/lastfm', '/lastfm-last-played'];
+    const validPaths = ['/lastfm-chart', '/lastfm-last-played'];
     
     // Check if the requested path is valid
     if (!validPaths.some(path => url.pathname.startsWith(path))) {
