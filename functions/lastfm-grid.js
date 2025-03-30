@@ -15,7 +15,7 @@ export async function onRequest(context) {
     
     // Fetch top albums from Last.fm
     const lastfmResponse = await fetch(
-      `http://ws.audioscrobbler.com/2.0/?method=user.gettopalbums&user=${username}&period=7day&limit=10&api_key=${context.env.LASTFM_API_KEY}&format=json`
+      `http://ws.audioscrobbler.com/2.0/?method=user.gettopalbums&user=${encodeURIComponent(username)}&period=7day&limit=10&api_key=${context.env.LASTFM_API_KEY}&format=json`
     );
 
     if (!lastfmResponse.ok) {
@@ -37,13 +37,28 @@ export async function onRequest(context) {
     const imageSize = Math.min(cellWidth * 0.9, cellHeight * 0.9); // 90% of cell size
     const imagePadding = (cellWidth - imageSize) / 2;
 
+    // Function to escape XML special characters
+    const escapeXml = (unsafe) => {
+      if (!unsafe) return '';
+      return unsafe
+        .replace(/[<>&'"]/g, (c) => {
+          switch (c) {
+            case '<': return '&lt;';
+            case '>': return '&gt;';
+            case '&': return '&amp;';
+            case '\'': return '&apos;';
+            case '"': return '&quot;';
+          }
+        });
+    };
+
     // Generate SVG
-    const svg = `
+    const svg = `<?xml version="1.0" encoding="UTF-8"?>
       <svg xmlns="http://www.w3.org/2000/svg" width="${screenWidth}" height="${screenHeight}" viewBox="0 0 ${screenWidth} ${screenHeight}">
         <style>
           .album-image { filter: grayscale(100%); }
-          .album-title { font: 12px system-ui, sans-serif; fill: #000000; text-anchor: middle; }
-          .artist-name { font: 10px system-ui, sans-serif; fill: #666666; text-anchor: middle; }
+          .album-title { font: 12px 'Inter', system-ui, sans-serif; fill: #000000; text-anchor: middle; }
+          .artist-name { font: 10px 'Inter', system-ui, sans-serif; fill: #666666; text-anchor: middle; }
         </style>
         
         <!-- Background -->
@@ -56,25 +71,28 @@ export async function onRequest(context) {
           const x = col * cellWidth;
           const y = row * cellHeight;
           const imageUrl = album.image.find(img => img.size === 'large')?.['#text'] || '';
+          const safeImageUrl = escapeXml(imageUrl);
+          const safeAlbumName = escapeXml(album.name);
+          const safeArtistName = escapeXml(album.artist.name);
           
           return `
             <g transform="translate(${x}, ${y})">
-              ${imageUrl ? `
+              ${safeImageUrl ? `
                 <image 
-                  href="${imageUrl}"
+                  href="${safeImageUrl}"
                   x="${imagePadding}"
                   y="${imagePadding}"
                   width="${imageSize}"
                   height="${imageSize}"
                   class="album-image"
                 />` : ''}
-              <text x="${cellWidth/2}" y="${cellHeight - 20}" class="album-title">${album.name}</text>
-              <text x="${cellWidth/2}" y="${cellHeight - 5}" class="artist-name">${album.artist.name}</text>
+              <text x="${cellWidth/2}" y="${cellHeight - 20}" class="album-title">${safeAlbumName}</text>
+              <text x="${cellWidth/2}" y="${cellHeight - 5}" class="artist-name">${safeArtistName}</text>
             </g>
           `;
         }).join('')}
       </svg>
-    `;
+    `.trim();
 
     return new Response(svg, {
       headers: {
