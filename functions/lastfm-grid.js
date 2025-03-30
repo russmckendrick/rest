@@ -47,16 +47,50 @@ export async function onRequest(context) {
       }
 
       const albumInfoUrl = `http://ws.audioscrobbler.com/2.0/?method=album.getInfo&artist=${encodeURIComponent(artistName)}&album=${encodeURIComponent(album.name)}&api_key=${context.env.LASTFM_API_KEY}&format=json`;
+      if (debug) debugInfo.push(`Album ${index + 1} info URL: ${albumInfoUrl}`);
+      
       const albumInfoResponse = await fetch(albumInfoUrl);
 
       if (!albumInfoResponse.ok) {
-        if (debug) debugInfo.push(`Failed to fetch album info for ${album.name}`);
+        if (debug) debugInfo.push(`Failed to fetch album info for ${album.name} (${albumInfoResponse.status}): ${await albumInfoResponse.text()}`);
         return null;
       }
 
       const albumInfo = await albumInfoResponse.json();
+      if (debug && albumInfo.error) {
+        debugInfo.push(`Album ${index + 1} info error: ${albumInfo.message}`);
+      }
+      
       if (!albumInfo?.album?.image) {
         if (debug) debugInfo.push(`No image data for album ${album.name}`);
+        // Try getting image from the album chart response instead
+        if (Array.isArray(album.image)) {
+          const chartImageUrl = album.image
+            .sort((a, b) => {
+              const sizeOrder = { extralarge: 4, large: 3, medium: 2, small: 1 };
+              return sizeOrder[b.size] - sizeOrder[a.size];
+            })[0]?.['#text'];
+            
+          if (chartImageUrl && 
+              !chartImageUrl.includes('2a96cbd8b46e442fc41c2b86b821562f') &&
+              !chartImageUrl.includes('default_album') &&
+              chartImageUrl.trim() !== '') {
+            if (debug) debugInfo.push(`Using image URL from chart for album ${index + 1}: ${chartImageUrl}`);
+            try {
+              const imageResponse = await fetch(chartImageUrl);
+              if (!imageResponse.ok) return null;
+              const arrayBuffer = await imageResponse.arrayBuffer();
+              const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+              const contentType = imageResponse.headers.get('content-type') || 'image/jpeg';
+              return { 
+                dataUrl: `data:${contentType};base64,${base64}`,
+                index 
+              };
+            } catch (error) {
+              if (debug) debugInfo.push(`Error fetching chart image for album ${index + 1}: ${error.message}`);
+            }
+          }
+        }
         return null;
       }
 
@@ -65,6 +99,8 @@ export async function onRequest(context) {
           const sizeOrder = { extralarge: 4, large: 3, medium: 2, small: 1 };
           return sizeOrder[b.size] - sizeOrder[a.size];
         })[0]?.['#text'];
+
+      if (debug) debugInfo.push(`Album ${index + 1} image URL: ${albumImageUrl || 'none'}`);
 
       if (!albumImageUrl || 
           albumImageUrl.includes('2a96cbd8b46e442fc41c2b86b821562f') ||
@@ -75,11 +111,16 @@ export async function onRequest(context) {
       }
 
       try {
+        if (debug) debugInfo.push(`Fetching image for album ${index + 1}...`);
         const imageResponse = await fetch(albumImageUrl);
-        if (!imageResponse.ok) return null;
+        if (!imageResponse.ok) {
+          if (debug) debugInfo.push(`Failed to fetch image for album ${index + 1} (${imageResponse.status}): ${await imageResponse.text()}`);
+          return null;
+        }
         const arrayBuffer = await imageResponse.arrayBuffer();
         const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
         const contentType = imageResponse.headers.get('content-type') || 'image/jpeg';
+        if (debug) debugInfo.push(`Successfully processed image for album ${index + 1}`);
         return { 
           dataUrl: `data:${contentType};base64,${base64}`,
           index 
