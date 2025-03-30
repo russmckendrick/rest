@@ -171,8 +171,8 @@ export async function onRequest(context) {
               display: grid;
               grid-template-columns: repeat(5, 1fr);
               grid-template-rows: repeat(2, 1fr);
-              gap: 8px;
-              padding: 8px;
+              gap: 12px;
+              padding: 16px;
               height: calc(100% - 80px);
               background: #fff;
             }
@@ -184,6 +184,7 @@ export async function onRequest(context) {
               background: #fff;
               border: 1px solid #000;
               overflow: hidden;
+              padding: 4px;
             }
             .album-image {
               width: 100%;
@@ -226,7 +227,7 @@ export async function onRequest(context) {
         </head>
         <body class="environment trmnl">
           <!-- Black pixel to establish rendering context -->
-          <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" width="1" height="1" style="position: absolute; top: 0; left: 0;" />
+          <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" width="1" height="1" style="position: absolute; top: 0; left: 0; opacity: 0; pointer-events: none; display: block;" />
           
           <div class="screen">
             <div class="view view--full">
@@ -235,8 +236,8 @@ export async function onRequest(context) {
                   ${orderedImages.map((dataUrl, index) => `
                     <div class="album-cell">
                       ${dataUrl ? `
-                        <div style="width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; background: #fff; position: relative;">
-                          <img class="album-image" src="${dataUrl}" alt="Album ${index + 1}" style="max-width: 90%; max-height: 90%;" />
+                        <div style="width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; background: #fff;">
+                          <img class="album-image" src="${dataUrl}" alt="Album ${index + 1}" />
                         </div>
                       ` : ''}
                     </div>
