@@ -2,6 +2,30 @@
 
 A collection of serverless functions that generate dynamic content, hosted on Cloudflare Workers. Perfect for displaying your Last.fm listening habits in your GitHub profile, blog, or website!
 
+## 🎨 TRMNL Last.fm Album Grid
+
+Display a 2x5 grid of your top 10 album covers from the last week, optimized for TRMNL e-ink displays.
+
+### 🚀 Usage
+
+Base URL: `https://www.russ.rest/trmnl-lastfm-grid`
+
+#### 📝 Parameters
+
+- `username` - Last.fm username (default: [RussMckendrick](http://last.fm/user/RussMckendrick))
+
+#### 🌟 Features
+
+- 2x5 grid layout of album covers
+- Grayscale images optimized for e-ink display
+- Album titles and artist names
+- 30-minute cache for better performance
+- CORS enabled for web integration
+
+#### 📊 Example
+
+Visit https://www.russ.rest/trmnl-lastfm-grid?username=RussMcKendrick or https://www.russ.rest/trmnl-lastfm-grid?username=RussMcKendrick&debug
+
 ## 🎧 Last.fm Weekly Artists and Albums
 
 Generate beautiful SVG visualizations of your Last.fm listening history for the last week. The function supports displaying both top artists and albums you've been listening to for the last 7 days.
@@ -91,30 +115,6 @@ Base URL: `https://www.russ.rest/lastfm-last-played`
 ```
 
 ![Last Played](https://www.russ.rest/lastfm-last-played?username=RussMcKendrick&width=900)
-
-## 🎨 TRMNL Last.fm Album Grid
-
-Display a 2x5 grid of your top 10 album covers from the last week, optimized for TRMNL e-ink displays.
-
-### 🚀 Usage
-
-Base URL: `https://www.russ.rest/trmnl-lastfm-grid`
-
-#### 📝 Parameters
-
-- `username` - Last.fm username (default: [RussMckendrick](http://last.fm/user/RussMckendrick))
-
-#### 🌟 Features
-
-- 2x5 grid layout of album covers
-- Grayscale images optimized for e-ink display
-- Album titles and artist names
-- 30-minute cache for better performance
-- CORS enabled for web integration
-
-#### 📊 Example
-
-Visit https://www.russ.rest/lastfm-grid?username=RussMcKendrick
 
 ## 📱 Last.fm Ticker API
 
