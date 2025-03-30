@@ -174,6 +174,7 @@ export async function onRequest(context) {
               gap: 8px;
               padding: 8px;
               height: calc(100% - 80px);
+              background: #fff;
             }
             .album-cell {
               aspect-ratio: 1;
@@ -181,16 +182,17 @@ export async function onRequest(context) {
               justify-content: center;
               align-items: center;
               background: #fff;
-              border: 1px solid #eee;
+              border: 1px solid #000;
               overflow: hidden;
             }
             .album-image {
               width: 100%;
               height: 100%;
-              object-fit: cover;
-              filter: grayscale(100%) contrast(200%) brightness(150%);
+              object-fit: contain;
+              filter: grayscale(100%) contrast(200%) brightness(150%) saturate(0);
               image-rendering: pixelated;
               -webkit-font-smoothing: none;
+              mix-blend-mode: multiply;
             }
             .title_bar {
               height: 80px;
@@ -199,7 +201,26 @@ export async function onRequest(context) {
               justify-content: space-between;
               padding: 0 20px;
               background: #fff;
-              border-top: 1px solid #eee;
+              border-top: 1px solid #000;
+            }
+            /* Force high contrast for e-ink display */
+            body {
+              background: #fff !important;
+              color: #000 !important;
+            }
+            .screen {
+              background: #fff !important;
+            }
+            .view {
+              background: #fff !important;
+            }
+            .layout {
+              background: #fff !important;
+            }
+            /* Ensure proper image rendering */
+            img {
+              image-rendering: -webkit-optimize-contrast;
+              image-rendering: crisp-edges;
             }
           </style>
         </head>
@@ -210,7 +231,11 @@ export async function onRequest(context) {
                 <div class="album-grid">
                   ${orderedImages.map((dataUrl, index) => `
                     <div class="album-cell">
-                      ${dataUrl ? `<img class="album-image" src="${dataUrl}" alt="Album ${index + 1}" />` : ''}
+                      ${dataUrl ? `
+                        <div style="width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; background: #fff;">
+                          <img class="album-image" src="${dataUrl}" alt="Album ${index + 1}" style="max-width: 90%; max-height: 90%;" />
+                        </div>
+                      ` : ''}
                     </div>
                   `).join('')}
                 </div>
@@ -218,8 +243,8 @@ export async function onRequest(context) {
               
               <div class="title_bar">
                 <img class="image" src="https://usetrmnl.com/images/plugins/trmnl--render.svg" />
-                <span class="title">Weekly Top Albums</span>
-                <span class="instance">${username}'s Last.fm</span>
+                <span class="title" style="color: #000;">Weekly Top Albums</span>
+                <span class="instance" style="color: #000;">${username}'s Last.fm</span>
               </div>
             </div>
           </div>
