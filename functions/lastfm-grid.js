@@ -27,27 +27,35 @@ export async function onRequest(context) {
 
     // Fetch and convert images to base64
     const processedTracks = await Promise.all(tracks.map(async (track) => {
-      // Get the largest available image
-      const images = track.image || [];
-      const imageUrl = images.reduce((largest, current) => {
-        if (current.size === 'extralarge') return current['#text'];
-        if (current.size === 'large' && !largest) return current['#text'];
-        if (current.size === 'medium' && !largest) return current['#text'];
-        return largest;
-      }, '');
+      // Get album art URL from track info and ensure we're getting the largest available image
+      const albumImageUrl = track.image
+        .sort((a, b) => {
+          const sizeOrder = { extralarge: 4, large: 3, medium: 2, small: 1 };
+          return sizeOrder[b.size] - sizeOrder[a.size];
+        })[0]?.['#text'];
 
-      if (!imageUrl || imageUrl.includes('2a96cbd8b46e442fc41c2b86b821562f')) {
-        return null; // Skip default/placeholder images
+      if (!albumImageUrl || albumImageUrl.includes('2a96cbd8b46e442fc41c2b86b821562f')) {
+        return null;
       }
 
       try {
-        const imageResponse = await fetch(imageUrl);
+        const imageResponse = await fetch(albumImageUrl);
         if (!imageResponse.ok) return null;
 
-        const imageBuffer = await imageResponse.arrayBuffer();
-        const base64Image = btoa(String.fromCharCode(...new Uint8Array(imageBuffer)));
+        // Convert to base64 in chunks to avoid call stack size exceeded
+        const imageData = await imageResponse.arrayBuffer();
+        const uint8Array = new Uint8Array(imageData);
+        const chunks = [];
+        const chunkSize = 8192;
+        
+        for (let i = 0; i < uint8Array.length; i += chunkSize) {
+          const chunk = uint8Array.slice(i, i + chunkSize);
+          chunks.push(String.fromCharCode.apply(null, chunk));
+        }
+        
+        const base64String = btoa(chunks.join(''));
         const contentType = imageResponse.headers.get('content-type') || 'image/jpeg';
-        return `data:${contentType};base64,${base64Image}`;
+        return `data:${contentType};base64,${base64String}`;
       } catch (error) {
         console.error('Failed to fetch image:', error);
         return null;
