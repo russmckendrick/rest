@@ -103,18 +103,20 @@ export async function onRequest(context) {
               display: flex;
               height: calc(100% - 80px);
               background: #fff;
-              padding: 16px;
+              padding: 24px;
+              align-items: center;
             }
             .album-art {
-              width: 200px;
-              height: 200px;
+              width: 300px;
+              height: 300px;
               flex-shrink: 0;
-              margin-right: 24px;
-              border: 1px solid #000;
+              margin-right: 32px;
+              border: 2px solid #000;
               overflow: hidden;
               display: flex;
               justify-content: center;
               align-items: center;
+              background: #f0f0f0;
             }
             .album-image {
               width: 100%;
@@ -130,31 +132,41 @@ export async function onRequest(context) {
               display: flex;
               flex-direction: column;
               justify-content: center;
-              padding: 16px;
+              padding: 24px;
             }
             .track-name {
-              font-size: 24px;
+              font-size: 42px;
               font-weight: bold;
-              margin-bottom: 8px;
+              margin-bottom: 16px;
               color: #000;
+              line-height: 1.2;
             }
             .artist-name {
-              font-size: 18px;
-              margin-bottom: 4px;
+              font-size: 32px;
+              margin-bottom: 12px;
               color: #000;
+              line-height: 1.2;
             }
             .album-name {
-              font-size: 16px;
+              font-size: 28px;
               color: #000;
+              line-height: 1.2;
             }
             .title_bar {
               height: 80px;
               display: flex;
               align-items: center;
               justify-content: space-between;
-              padding: 0 20px;
+              padding: 0 24px;
               background: #fff;
-              border-top: 1px solid #000;
+              border-top: 2px solid #000;
+            }
+            .title_bar .title {
+              font-size: 24px;
+              font-weight: bold;
+            }
+            .title_bar .instance {
+              font-size: 20px;
             }
             /* Force high contrast for e-ink display */
             body {
