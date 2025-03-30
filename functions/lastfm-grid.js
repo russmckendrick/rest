@@ -12,8 +12,13 @@ export async function onRequest(context) {
   try {
     const url = new URL(context.request.url);
     const username = url.searchParams.get('username') || 'russmckendrick';
+    const debug = url.searchParams.has('debug');
+    
+    // Debug array to collect information
+    const debugInfo = [];
     
     // Fetch recent tracks from Last.fm
+    if (debug) debugInfo.push('Fetching tracks...');
     const lastfmResponse = await fetch(
       `http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${encodeURIComponent(username)}&limit=10&api_key=${context.env.LASTFM_API_KEY}&format=json`
     );
@@ -23,10 +28,23 @@ export async function onRequest(context) {
     }
 
     const data = await lastfmResponse.json();
+    if (!data?.recenttracks?.track) {
+      throw new Error('Invalid Last.fm response format');
+    }
+
     const tracks = data.recenttracks.track;
+    if (debug) debugInfo.push(`Found ${tracks.length} tracks`);
 
     // Fetch and convert images to base64
-    const processedTracks = await Promise.all(tracks.map(async (track) => {
+    const processedTracks = await Promise.all(tracks.map(async (track, index) => {
+      if (debug) debugInfo.push(`Processing track ${index + 1}...`);
+      
+      // Ensure track has image array
+      if (!Array.isArray(track.image)) {
+        if (debug) debugInfo.push(`Track ${index + 1} has no image array`);
+        return null;
+      }
+
       // Get album art URL from track info and ensure we're getting the largest available image
       const albumImageUrl = track.image
         .sort((a, b) => {
@@ -34,16 +52,28 @@ export async function onRequest(context) {
           return sizeOrder[b.size] - sizeOrder[a.size];
         })[0]?.['#text'];
 
-      if (!albumImageUrl || albumImageUrl.includes('2a96cbd8b46e442fc41c2b86b821562f')) {
+      if (debug) debugInfo.push(`Track ${index + 1} image URL: ${albumImageUrl || 'none'}`);
+
+      if (!albumImageUrl || 
+          albumImageUrl.includes('2a96cbd8b46e442fc41c2b86b821562f') ||
+          albumImageUrl.includes('default_album') ||
+          albumImageUrl.trim() === '') {
+        if (debug) debugInfo.push(`Track ${index + 1} has invalid image URL`);
         return null;
       }
 
       try {
+        if (debug) debugInfo.push(`Fetching image for track ${index + 1}...`);
         const imageResponse = await fetch(albumImageUrl);
-        if (!imageResponse.ok) return null;
+        if (!imageResponse.ok) {
+          if (debug) debugInfo.push(`Failed to fetch image for track ${index + 1}: ${imageResponse.status}`);
+          return null;
+        }
 
         // Convert to base64 in chunks to avoid call stack size exceeded
         const imageData = await imageResponse.arrayBuffer();
+        if (debug) debugInfo.push(`Image size for track ${index + 1}: ${imageData.byteLength} bytes`);
+        
         const uint8Array = new Uint8Array(imageData);
         const chunks = [];
         const chunkSize = 8192;
@@ -55,12 +85,17 @@ export async function onRequest(context) {
         
         const base64String = btoa(chunks.join(''));
         const contentType = imageResponse.headers.get('content-type') || 'image/jpeg';
+        
+        if (debug) debugInfo.push(`Successfully processed image for track ${index + 1}`);
         return `data:${contentType};base64,${base64String}`;
       } catch (error) {
+        if (debug) debugInfo.push(`Error processing track ${index + 1}: ${error.message}`);
         console.error('Failed to fetch image:', error);
         return null;
       }
     }));
+
+    if (debug) debugInfo.push(`Processed ${processedTracks.filter(t => t !== null).length} images successfully`);
 
     // Generate TRMNL-compatible HTML markup
     const markup = `
@@ -91,6 +126,13 @@ export async function onRequest(context) {
               object-fit: contain;
               filter: grayscale(100%) contrast(100%);
             }
+            .debug-info {
+              font-family: monospace;
+              font-size: 12px;
+              padding: 10px;
+              background: #f0f0f0;
+              margin-top: 20px;
+            }
           </style>
         </head>
         <body class="environment trmnl">
@@ -115,6 +157,12 @@ export async function onRequest(context) {
                 <span class="title">Recently played</span>
                 <span class="instance">${username}'s Last.fm</span>
               </div>
+
+              ${debug ? `
+                <div class="debug-info">
+                  ${debugInfo.map(info => `<div>${info}</div>`).join('')}
+                </div>
+              ` : ''}
             </div>
           </div>
         </body>
