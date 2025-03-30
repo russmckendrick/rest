@@ -226,10 +226,10 @@ export async function onRequest(context) {
           </style>
         </head>
         <body class="environment trmnl">
-          <!-- Black pixel to establish rendering context -->
-          <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" width="1" height="1" style="position: absolute; top: 0; left: 0; opacity: 0; pointer-events: none; display: block;" />
-          
           <div class="screen">
+            <!-- Black pixel to establish rendering context -->
+            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" width="1" height="1" style="position: absolute; top: 0; left: 0; opacity: 0; pointer-events: none; display: block;" />
+            
             <div class="view view--full">
               <div class="layout">
                 <div class="album-grid">
