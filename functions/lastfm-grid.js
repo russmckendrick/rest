@@ -77,8 +77,13 @@ export async function onRequest(context) {
       try {
         const imageResponse = await fetch(albumImageUrl);
         if (!imageResponse.ok) return null;
-        const imageBlob = await imageResponse.blob();
-        return { blob: imageBlob, index };
+        const arrayBuffer = await imageResponse.arrayBuffer();
+        const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+        const contentType = imageResponse.headers.get('content-type') || 'image/jpeg';
+        return { 
+          dataUrl: `data:${contentType};base64,${base64}`,
+          index 
+        };
       } catch (error) {
         if (debug) debugInfo.push(`Error fetching image for album ${index + 1}: ${error.message}`);
         return null;
@@ -89,49 +94,6 @@ export async function onRequest(context) {
     const validImages = albumImages.filter(img => img !== null);
     if (debug) debugInfo.push(`Successfully fetched ${validImages.length} album images`);
 
-    // Create canvas and draw the grid
-    const canvas = new OffscreenCanvas(800, 480);
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = 'white';
-    ctx.fillRect(0, 0, 800, 480);
-
-    // Calculate grid dimensions
-    const gridCols = 5;
-    const gridRows = 2;
-    const cellWidth = Math.floor(800 / gridCols);
-    const cellHeight = Math.floor(400 / gridRows); // Leave space for title bar
-    const padding = 10;
-
-    // Draw album images
-    await Promise.all(validImages.map(async ({ blob, index }) => {
-      const row = Math.floor(index / gridCols);
-      const col = index % gridCols;
-      const x = col * cellWidth + padding;
-      const y = row * cellHeight + padding;
-      const width = cellWidth - (padding * 2);
-      const height = cellHeight - (padding * 2);
-
-      const imageBitmap = await createImageBitmap(blob);
-      ctx.filter = 'grayscale(100%) contrast(200%) brightness(150%)';
-      ctx.drawImage(imageBitmap, x, y, width, height);
-    }));
-
-    // Draw title bar
-    ctx.fillStyle = 'white';
-    ctx.fillRect(0, 400, 800, 80);
-    ctx.fillStyle = 'black';
-    ctx.font = '20px Inter';
-    ctx.textAlign = 'center';
-    ctx.fillText(`${username}'s Weekly Top Albums`, 400, 445);
-
-    // Convert canvas to base64
-    const imageBuffer = await canvas.convertToBlob({ type: 'image/png' });
-    const base64String = await new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result);
-      reader.readAsDataURL(imageBuffer);
-    });
-
     // Generate TRMNL-compatible HTML markup
     const markup = `
       <!DOCTYPE html>
@@ -139,12 +101,63 @@ export async function onRequest(context) {
         <head>
           <link rel="stylesheet" href="https://usetrmnl.com/css/latest/plugins.css">
           <script src="https://usetrmnl.com/js/latest/plugins.js"></script>
+          <style>
+            .album-grid {
+              display: grid;
+              grid-template-columns: repeat(5, 1fr);
+              grid-template-rows: repeat(2, 1fr);
+              gap: 8px;
+              padding: 8px;
+              height: calc(100% - 80px);
+            }
+            .album-cell {
+              aspect-ratio: 1;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              background: #fff;
+              border: 1px solid #eee;
+              overflow: hidden;
+            }
+            .album-image {
+              width: 100%;
+              height: 100%;
+              object-fit: cover;
+              filter: grayscale(100%) contrast(200%) brightness(150%);
+              image-rendering: pixelated;
+              -webkit-font-smoothing: none;
+            }
+            .title_bar {
+              height: 80px;
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              padding: 0 20px;
+              background: #fff;
+              border-top: 1px solid #eee;
+            }
+          </style>
         </head>
         <body class="environment trmnl">
           <div class="screen">
             <div class="view view--full">
               <div class="layout">
-                <img src="${base64String}" alt="Album Grid" style="width: 100%; height: 100%; object-fit: contain;" />
+                <div class="album-grid">
+                  ${validImages.map(({ dataUrl }, index) => `
+                    <div class="album-cell">
+                      <img class="album-image" src="${dataUrl}" alt="Album ${index + 1}" />
+                    </div>
+                  `).join('')}
+                  ${Array(10 - validImages.length).fill(0).map(() => `
+                    <div class="album-cell"></div>
+                  `).join('')}
+                </div>
+              </div>
+              
+              <div class="title_bar">
+                <img class="image" src="https://usetrmnl.com/images/plugins/trmnl--render.svg" />
+                <span class="title">Weekly Top Albums</span>
+                <span class="instance">${username}'s Last.fm</span>
               </div>
             </div>
           </div>
