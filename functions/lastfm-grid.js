@@ -13,9 +13,9 @@ export async function onRequest(context) {
     const url = new URL(context.request.url);
     const username = url.searchParams.get('username') || 'russmckendrick';
     
-    // Fetch top albums from Last.fm
+    // Fetch recent tracks from Last.fm
     const lastfmResponse = await fetch(
-      `http://ws.audioscrobbler.com/2.0/?method=user.gettopalbums&user=${encodeURIComponent(username)}&period=7day&limit=10&api_key=${context.env.LASTFM_API_KEY}&format=json`
+      `http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${encodeURIComponent(username)}&limit=10&api_key=${context.env.LASTFM_API_KEY}&format=json`
     );
 
     if (!lastfmResponse.ok) {
@@ -23,7 +23,7 @@ export async function onRequest(context) {
     }
 
     const data = await lastfmResponse.json();
-    const albums = data.topalbums.album;
+    const tracks = data.recenttracks.track;
 
     // TRMNL screen dimensions
     const screenWidth = 800;
@@ -57,23 +57,19 @@ export async function onRequest(context) {
       <svg xmlns="http://www.w3.org/2000/svg" width="${screenWidth}" height="${screenHeight}" viewBox="0 0 ${screenWidth} ${screenHeight}">
         <style>
           .album-image { filter: grayscale(100%); }
-          .album-title { font: 12px 'Inter', system-ui, sans-serif; fill: #000000; text-anchor: middle; }
-          .artist-name { font: 10px 'Inter', system-ui, sans-serif; fill: #666666; text-anchor: middle; }
         </style>
         
         <!-- Background -->
         <rect width="${screenWidth}" height="${screenHeight}" fill="#FFFFFF"/>
         
         <!-- Album Grid -->
-        ${albums.map((album, index) => {
+        ${tracks.map((track, index) => {
           const row = Math.floor(index / gridCols);
           const col = index % gridCols;
           const x = col * cellWidth;
           const y = row * cellHeight;
-          const imageUrl = album.image.find(img => img.size === 'large')?.['#text'] || '';
+          const imageUrl = track.image.find(img => img.size === 'large')?.['#text'] || '';
           const safeImageUrl = escapeXml(imageUrl);
-          const safeAlbumName = escapeXml(album.name);
-          const safeArtistName = escapeXml(album.artist.name);
           
           return `
             <g transform="translate(${x}, ${y})">
@@ -86,8 +82,6 @@ export async function onRequest(context) {
                   height="${imageSize}"
                   class="album-image"
                 />` : ''}
-              <text x="${cellWidth/2}" y="${cellHeight - 20}" class="album-title">${safeAlbumName}</text>
-              <text x="${cellWidth/2}" y="${cellHeight - 5}" class="artist-name">${safeArtistName}</text>
             </g>
           `;
         }).join('')}
