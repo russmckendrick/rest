@@ -156,7 +156,13 @@ export async function onRequest(context) {
               width: 100%;
               height: 100%;
               object-fit: contain;
-              filter: grayscale(100%) contrast(100%);
+              filter: grayscale(100%) contrast(200%) brightness(150%);
+              image-rendering: pixelated;
+              -webkit-font-smoothing: none;
+              mix-blend-mode: multiply;
+            }
+            .album-cell img {
+              image-dither: true;
             }
             .debug-info {
               font-family: monospace;
