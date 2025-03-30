@@ -210,7 +210,7 @@ export async function onRequest(context) {
                   <div class="header">
                     <div class="user-info">
                       <div class="username">${user.name}</div>
-                      <div class="join-date">Member since ${new Date(parseInt(user.registered.unixtime) * 1000).toLocaleDateString()}</div>
+                      <div class="join-date">Member since ${new Date(parseInt(user.registered.unixtime) * 1000).toLocaleDateString('en-GB')}</div>
                     </div>
                   </div>
                   
