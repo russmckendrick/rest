@@ -32,6 +32,8 @@ export async function onRequest(context) {
       throw new Error('Invalid Last.fm response format');
     }
 
+    if (debug) debugInfo.push('Raw API Response:', JSON.stringify(data.weeklyalbumchart.album[0], null, 2));
+
     const albums = data.weeklyalbumchart.album.slice(0, 10);
     if (debug) debugInfo.push(`Found ${albums.length} albums`);
 
@@ -39,24 +41,38 @@ export async function onRequest(context) {
     const processedAlbums = await Promise.all(albums.map(async (album, index) => {
       if (debug) debugInfo.push(`Processing album ${index + 1}...`);
       
+      // Extract artist name properly
+      const artistName = typeof album.artist === 'string' ? album.artist : album.artist?.['#text'] || album.artist?.name;
+      
       if (debug) {
         debugInfo.push(`Album ${index + 1} data:`);
         debugInfo.push(`- Name: ${album.name}`);
-        debugInfo.push(`- Artist: ${album.artist}`);
+        debugInfo.push(`- Artist (raw): ${JSON.stringify(album.artist)}`);
+        debugInfo.push(`- Artist (extracted): ${artistName}`);
         debugInfo.push(`- Playcount: ${album.playcount}`);
       }
 
+      if (!artistName) {
+        if (debug) debugInfo.push(`No valid artist name for album ${index + 1}`);
+        return null;
+      }
+
       // Fetch album info to get the image URL
-      const albumInfoResponse = await fetch(
-        `http://ws.audioscrobbler.com/2.0/?method=album.getInfo&artist=${encodeURIComponent(album.artist)}&album=${encodeURIComponent(album.name)}&api_key=${context.env.LASTFM_API_KEY}&format=json`
-      );
+      const albumInfoUrl = `http://ws.audioscrobbler.com/2.0/?method=album.getInfo&artist=${encodeURIComponent(artistName)}&album=${encodeURIComponent(album.name)}&api_key=${context.env.LASTFM_API_KEY}&format=json`;
+      if (debug) debugInfo.push(`Album info URL: ${albumInfoUrl}`);
+      
+      const albumInfoResponse = await fetch(albumInfoUrl);
 
       if (!albumInfoResponse.ok) {
-        if (debug) debugInfo.push(`Failed to fetch album info for ${album.name}`);
+        if (debug) debugInfo.push(`Failed to fetch album info for ${album.name}: ${albumInfoResponse.status}`);
         return null;
       }
 
       const albumInfo = await albumInfoResponse.json();
+      if (debug && albumInfo.error) {
+        debugInfo.push(`Album info error: ${albumInfo.message}`);
+      }
+      
       if (!albumInfo?.album?.image) {
         if (debug) debugInfo.push(`No image data for album ${album.name}`);
         return null;
