@@ -80,7 +80,16 @@ export async function onRequest(context) {
               const imageResponse = await fetch(chartImageUrl);
               if (!imageResponse.ok) return null;
               const arrayBuffer = await imageResponse.arrayBuffer();
-              const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+              const uint8Array = new Uint8Array(arrayBuffer);
+              const chunks = [];
+              const chunkSize = 8192;
+              
+              for (let i = 0; i < uint8Array.length; i += chunkSize) {
+                const chunk = uint8Array.slice(i, i + chunkSize);
+                chunks.push(String.fromCharCode.apply(null, chunk));
+              }
+              
+              const base64 = btoa(chunks.join(''));
               const contentType = imageResponse.headers.get('content-type') || 'image/jpeg';
               return { 
                 dataUrl: `data:${contentType};base64,${base64}`,
@@ -118,9 +127,18 @@ export async function onRequest(context) {
           return null;
         }
         const arrayBuffer = await imageResponse.arrayBuffer();
-        const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+        const uint8Array = new Uint8Array(arrayBuffer);
+        const chunks = [];
+        const chunkSize = 8192;
+        
+        for (let i = 0; i < uint8Array.length; i += chunkSize) {
+          const chunk = uint8Array.slice(i, i + chunkSize);
+          chunks.push(String.fromCharCode.apply(null, chunk));
+        }
+        
+        const base64 = btoa(chunks.join(''));
         const contentType = imageResponse.headers.get('content-type') || 'image/jpeg';
-        if (debug) debugInfo.push(`Successfully processed image for album ${index + 1}`);
+        if (debug) debugInfo.push(`Successfully processed image for album ${index + 1} (${uint8Array.length} bytes)`);
         return { 
           dataUrl: `data:${contentType};base64,${base64}`,
           index 
