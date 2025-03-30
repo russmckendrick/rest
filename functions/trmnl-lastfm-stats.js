@@ -33,7 +33,7 @@ export async function onRequest(context) {
     // Fetch user's top artists
     if (debug) debugInfo.push('Fetching top artists...');
     const topArtistsResponse = await fetch(
-      `http://ws.audioscrobbler.com/2.0/?method=user.gettopartists&user=${username}&period=7day&limit=5&api_key=${context.env.LASTFM_API_KEY}&format=json`
+      `http://ws.audioscrobbler.com/2.0/?method=user.gettopartists&user=${username}&period=7day&limit=6&api_key=${context.env.LASTFM_API_KEY}&format=json`
     );
 
     if (!topArtistsResponse.ok) {
@@ -99,7 +99,7 @@ export async function onRequest(context) {
               display: grid;
               grid-template-columns: repeat(4, 1fr);
               gap: 24px;
-              margin-bottom: 24px;
+              margin-bottom: 8px;
               padding: 0 16px;
             }
             
@@ -116,7 +116,7 @@ export async function onRequest(context) {
               font-size: 42px;
               font-weight: bold;
               color: #000;
-              margin-bottom: 8px;
+              margin-bottom: 4px;
               line-height: 1;
             }
             
@@ -128,7 +128,7 @@ export async function onRequest(context) {
             
             /* Top Artists Section */
             .top-artists {
-              margin-top: 24px;
+              margin-top: 8px;
               flex: 1;
               min-height: 0;
             }
@@ -136,7 +136,7 @@ export async function onRequest(context) {
             .top-artists-title {
               font-size: 24px;
               font-weight: bold;
-              margin-bottom: 16px;
+              margin-bottom: 8px;
               color: #000;
               line-height: 1;
               text-align: center;
