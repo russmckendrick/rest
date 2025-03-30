@@ -50,13 +50,22 @@ export async function onRequest(context) {
           <link rel="stylesheet" href="https://usetrmnl.com/css/latest/plugins.css">
           <script src="https://usetrmnl.com/js/latest/plugins.js"></script>
           <style>
-            .stats-container {
+            /* Base Layout */
+            .layout {
               display: flex;
               flex-direction: column;
-              height: calc(100% - 80px);
+              height: 100%;
               background: #fff;
-              padding: 24px;
             }
+            
+            /* Content Container */
+            .content {
+              flex: 1;
+              padding: 24px;
+              overflow-y: auto;
+            }
+            
+            /* Header Section */
             .header {
               display: flex;
               align-items: center;
@@ -64,71 +73,105 @@ export async function onRequest(context) {
               padding-bottom: 16px;
               border-bottom: 2px solid #000;
             }
+            
             .user-info {
-              flex-grow: 1;
+              flex: 1;
             }
+            
             .username {
               font-size: 36px;
               font-weight: bold;
               margin-bottom: 8px;
               color: #000;
+              line-height: 1.2;
             }
+            
             .join-date {
               font-size: 24px;
               color: #000;
+              line-height: 1.2;
             }
+            
+            /* Stats Grid */
             .stats-grid {
               display: grid;
               grid-template-columns: repeat(2, 1fr);
               gap: 24px;
               margin-bottom: 32px;
             }
+            
             .stat-box {
               background: #fff;
               border: 2px solid #000;
-              padding: 16px;
+              padding: 20px;
               text-align: center;
+              transition: all 0.2s ease;
             }
+            
+            .stat-box:hover {
+              background: #f8f8f8;
+            }
+            
             .stat-value {
               font-size: 32px;
               font-weight: bold;
               color: #000;
               margin-bottom: 8px;
+              line-height: 1.2;
             }
+            
             .stat-label {
               font-size: 20px;
               color: #000;
+              line-height: 1.2;
             }
+            
+            /* Top Artists Section */
             .top-artists {
-              flex-grow: 1;
+              margin-top: 32px;
             }
+            
             .top-artists-title {
               font-size: 28px;
               font-weight: bold;
               margin-bottom: 16px;
               color: #000;
+              line-height: 1.2;
             }
+            
             .artist-list {
               display: flex;
               flex-direction: column;
               gap: 12px;
             }
+            
             .artist-item {
               display: flex;
               justify-content: space-between;
               align-items: center;
-              padding: 8px 16px;
+              padding: 12px 20px;
               background: #fff;
               border: 1px solid #000;
+              transition: all 0.2s ease;
             }
+            
+            .artist-item:hover {
+              background: #f8f8f8;
+            }
+            
             .artist-name {
               font-size: 24px;
               color: #000;
+              line-height: 1.2;
             }
+            
             .artist-plays {
               font-size: 24px;
               color: #000;
+              line-height: 1.2;
             }
+            
+            /* Title Bar */
             .title_bar {
               height: 80px;
               display: flex;
@@ -138,19 +181,52 @@ export async function onRequest(context) {
               background: #fff;
               border-top: 2px solid #000;
             }
-            /* Force high contrast for e-ink display */
-            body {
-              background: #fff !important;
-              color: #000 !important;
-            }
+            
+            /* TRMNL Specific Styles */
             .screen {
               background: #fff !important;
             }
+            
             .view {
               background: #fff !important;
             }
-            .layout {
-              background: #fff !important;
+            
+            /* Debug Mode */
+            .debug-info {
+              font-family: monospace;
+              font-size: 12px;
+              padding: 10px;
+              background: #f0f0f0;
+              margin-top: 20px;
+              white-space: pre-wrap;
+            }
+            
+            /* Responsive Adjustments */
+            @media (max-width: 600px) {
+              .stats-grid {
+                grid-template-columns: 1fr;
+              }
+              
+              .username {
+                font-size: 28px;
+              }
+              
+              .join-date {
+                font-size: 20px;
+              }
+              
+              .stat-value {
+                font-size: 28px;
+              }
+              
+              .stat-label {
+                font-size: 18px;
+              }
+              
+              .artist-name,
+              .artist-plays {
+                font-size: 20px;
+              }
             }
           </style>
         </head>
@@ -160,7 +236,7 @@ export async function onRequest(context) {
               <div class="layout">
                 <!-- Black pixel to establish rendering context -->
                 <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" width="1" height="1" style="position: absolute; top: 0; left: 0; opacity: 0; pointer-events: none; display: block;" />
-                <div class="stats-container">
+                <div class="content">
                   <div class="header">
                     <div class="user-info">
                       <div class="username">${user.name}</div>
@@ -209,7 +285,7 @@ export async function onRequest(context) {
             </div>
           </div>
           ${debug ? `
-            <div style="font-family: monospace; font-size: 12px; padding: 10px; background: #f0f0f0; margin-top: 20px; white-space: pre-wrap;">
+            <div class="debug-info">
               ${debugInfo.map(info => `${info}`).join('\n')}
             </div>
           ` : ''}
