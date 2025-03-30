@@ -176,7 +176,7 @@ export async function onRequest(context) {
                   ${processedAlbums.map((imageData) => {
                     return imageData ? `
                       <div class="album-cell">
-                        <img class="album-image" src="${imageData}" alt="" />
+                        <img class="image-dither" src="${imageData}" alt="" />
                       </div>
                     ` : `
                       <div class="album-cell"></div>
