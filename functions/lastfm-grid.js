@@ -27,8 +27,18 @@ export async function onRequest(context) {
 
     // Fetch and convert images to base64
     const processedTracks = await Promise.all(tracks.map(async (track) => {
-      const imageUrl = track.image.find(img => img.size === 'large')?.['#text'];
-      if (!imageUrl) return null;
+      // Get the largest available image
+      const images = track.image || [];
+      const imageUrl = images.reduce((largest, current) => {
+        if (current.size === 'extralarge') return current['#text'];
+        if (current.size === 'large' && !largest) return current['#text'];
+        if (current.size === 'medium' && !largest) return current['#text'];
+        return largest;
+      }, '');
+
+      if (!imageUrl || imageUrl.includes('2a96cbd8b46e442fc41c2b86b821562f')) {
+        return null; // Skip default/placeholder images
+      }
 
       try {
         const imageResponse = await fetch(imageUrl);
@@ -65,6 +75,7 @@ export async function onRequest(context) {
               justify-content: center;
               align-items: center;
               background: #fff;
+              border: 1px solid #eee;
             }
             .album-image {
               width: 100%;
