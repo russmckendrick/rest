@@ -17,10 +17,10 @@ export async function onRequest(context) {
     // Debug array to collect information
     const debugInfo = [];
     
-    // Fetch recent tracks from Last.fm
-    if (debug) debugInfo.push('Fetching tracks...');
+    // Fetch weekly album chart from Last.fm
+    if (debug) debugInfo.push('Fetching weekly album chart...');
     const lastfmResponse = await fetch(
-      `http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${encodeURIComponent(username)}&limit=10&api_key=${context.env.LASTFM_API_KEY}&format=json`
+      `http://ws.audioscrobbler.com/2.0/?method=user.getweeklyalbumchart&user=${encodeURIComponent(username)}&limit=10&api_key=${context.env.LASTFM_API_KEY}&format=json`
     );
 
     if (!lastfmResponse.ok) {
@@ -28,57 +28,67 @@ export async function onRequest(context) {
     }
 
     const data = await lastfmResponse.json();
-    if (!data?.recenttracks?.track) {
+    if (!data?.weeklyalbumchart?.album) {
       throw new Error('Invalid Last.fm response format');
     }
 
-    const tracks = data.recenttracks.track;
-    if (debug) debugInfo.push(`Found ${tracks.length} tracks`);
+    const albums = data.weeklyalbumchart.album.slice(0, 10);
+    if (debug) debugInfo.push(`Found ${albums.length} albums`);
 
     // Fetch and convert images to base64
-    const processedTracks = await Promise.all(tracks.map(async (track, index) => {
-      if (debug) debugInfo.push(`Processing track ${index + 1}...`);
+    const processedAlbums = await Promise.all(albums.map(async (album, index) => {
+      if (debug) debugInfo.push(`Processing album ${index + 1}...`);
       
       if (debug) {
-        debugInfo.push(`Track ${index + 1} data:`);
-        debugInfo.push(`- Name: ${track.name}`);
-        debugInfo.push(`- Artist: ${track.artist['#text']}`);
-        debugInfo.push(`- Album: ${track.album?.['#text']}`);
+        debugInfo.push(`Album ${index + 1} data:`);
+        debugInfo.push(`- Name: ${album.name}`);
+        debugInfo.push(`- Artist: ${album.artist}`);
+        debugInfo.push(`- Playcount: ${album.playcount}`);
       }
 
-      // Get album art URL from track info and ensure we're getting the largest available image
-      if (!Array.isArray(track.image)) {
-        if (debug) debugInfo.push(`Track ${index + 1} has no image array`);
+      // Fetch album info to get the image URL
+      const albumInfoResponse = await fetch(
+        `http://ws.audioscrobbler.com/2.0/?method=album.getInfo&artist=${encodeURIComponent(album.artist)}&album=${encodeURIComponent(album.name)}&api_key=${context.env.LASTFM_API_KEY}&format=json`
+      );
+
+      if (!albumInfoResponse.ok) {
+        if (debug) debugInfo.push(`Failed to fetch album info for ${album.name}`);
         return null;
       }
 
-      const albumImageUrl = track.image
+      const albumInfo = await albumInfoResponse.json();
+      if (!albumInfo?.album?.image) {
+        if (debug) debugInfo.push(`No image data for album ${album.name}`);
+        return null;
+      }
+
+      const albumImageUrl = albumInfo.album.image
         .sort((a, b) => {
           const sizeOrder = { extralarge: 4, large: 3, medium: 2, small: 1 };
           return sizeOrder[b.size] - sizeOrder[a.size];
         })[0]?.['#text'];
 
-      if (debug) debugInfo.push(`Track ${index + 1} image URL: ${albumImageUrl || 'none'}`);
+      if (debug) debugInfo.push(`Album ${index + 1} image URL: ${albumImageUrl || 'none'}`);
 
       if (!albumImageUrl || 
           albumImageUrl.includes('2a96cbd8b46e442fc41c2b86b821562f') ||
           albumImageUrl.includes('default_album') ||
           albumImageUrl.trim() === '') {
-        if (debug) debugInfo.push(`Track ${index + 1} has invalid image URL`);
+        if (debug) debugInfo.push(`Album ${index + 1} has invalid image URL`);
         return null;
       }
 
       try {
-        if (debug) debugInfo.push(`Fetching image for track ${index + 1}...`);
+        if (debug) debugInfo.push(`Fetching image for album ${index + 1}...`);
         const imageResponse = await fetch(albumImageUrl);
         if (!imageResponse.ok) {
-          if (debug) debugInfo.push(`Failed to fetch image for track ${index + 1}: ${imageResponse.status}`);
+          if (debug) debugInfo.push(`Failed to fetch image for album ${index + 1}: ${imageResponse.status}`);
           return null;
         }
 
         // Convert to base64 in chunks to avoid call stack size exceeded
         const imageData = await imageResponse.arrayBuffer();
-        if (debug) debugInfo.push(`Image size for track ${index + 1}: ${imageData.byteLength} bytes`);
+        if (debug) debugInfo.push(`Image size for album ${index + 1}: ${imageData.byteLength} bytes`);
         
         const uint8Array = new Uint8Array(imageData);
         const chunks = [];
@@ -92,16 +102,16 @@ export async function onRequest(context) {
         const base64String = btoa(chunks.join(''));
         const contentType = imageResponse.headers.get('content-type') || 'image/jpeg';
         
-        if (debug) debugInfo.push(`Successfully processed image for track ${index + 1}`);
+        if (debug) debugInfo.push(`Successfully processed image for album ${index + 1}`);
         return `data:${contentType};base64,${base64String}`;
       } catch (error) {
-        if (debug) debugInfo.push(`Error processing track ${index + 1}: ${error.message}`);
+        if (debug) debugInfo.push(`Error processing album ${index + 1}: ${error.message}`);
         console.error('Failed to fetch image:', error);
         return null;
       }
     }));
 
-    if (debug) debugInfo.push(`Processed ${processedTracks.filter(t => t !== null).length} images successfully`);
+    if (debug) debugInfo.push(`Processed ${processedAlbums.filter(t => t !== null).length} images successfully`);
 
     // Generate TRMNL-compatible HTML markup
     const markup = `
@@ -147,7 +157,7 @@ export async function onRequest(context) {
             <div class="view view--full">
               <div class="layout">
                 <div class="album-grid">
-                  ${processedTracks.map((imageData) => {
+                  ${processedAlbums.map((imageData) => {
                     return imageData ? `
                       <div class="album-cell">
                         <img class="album-image" src="${imageData}" alt="" />
@@ -161,7 +171,7 @@ export async function onRequest(context) {
               
               <div class="title_bar">
                 <img class="image" src="https://usetrmnl.com/images/plugins/trmnl--render.svg" />
-                <span class="title">Recently played</span>
+                <span class="title">Weekly Top Albums</span>
                 <span class="instance">${username}'s Last.fm</span>
               </div>
 
