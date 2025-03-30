@@ -39,16 +39,26 @@ export async function onRequest(context) {
     const processedTracks = await Promise.all(tracks.map(async (track, index) => {
       if (debug) debugInfo.push(`Processing track ${index + 1}...`);
       
-      // Get album art URL from the album object first
-      const albumImageUrl = track?.album?.['#text'] || null;
-      
       if (debug) {
         debugInfo.push(`Track ${index + 1} data:`);
         debugInfo.push(`- Name: ${track.name}`);
         debugInfo.push(`- Artist: ${track.artist['#text']}`);
         debugInfo.push(`- Album: ${track.album?.['#text']}`);
-        debugInfo.push(`- Album Image URL: ${albumImageUrl}`);
       }
+
+      // Get album art URL from track info and ensure we're getting the largest available image
+      if (!Array.isArray(track.image)) {
+        if (debug) debugInfo.push(`Track ${index + 1} has no image array`);
+        return null;
+      }
+
+      const albumImageUrl = track.image
+        .sort((a, b) => {
+          const sizeOrder = { extralarge: 4, large: 3, medium: 2, small: 1 };
+          return sizeOrder[b.size] - sizeOrder[a.size];
+        })[0]?.['#text'];
+
+      if (debug) debugInfo.push(`Track ${index + 1} image URL: ${albumImageUrl || 'none'}`);
 
       if (!albumImageUrl || 
           albumImageUrl.includes('2a96cbd8b46e442fc41c2b86b821562f') ||
