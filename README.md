@@ -92,6 +92,34 @@ Base URL: `https://www.russ.rest/lastfm-last-played`
 
 ![Last Played](https://www.russ.rest/lastfm-last-played?username=RussMcKendrick&width=900)
 
+## 🎨 Last.fm Album Grid
+
+Display a 2x5 grid of your top 10 album covers from the last week, optimized for TRMNL e-ink displays.
+
+### 🚀 Usage
+
+Base URL: `https://www.russ.rest/lastfm-grid`
+
+#### 📝 Parameters
+
+- `username` - Last.fm username (default: [RussMckendrick](http://last.fm/user/RussMckendrick))
+
+#### 🌟 Features
+
+- 2x5 grid layout of album covers
+- Grayscale images optimized for e-ink display
+- Album titles and artist names
+- 30-minute cache for better performance
+- CORS enabled for web integration
+
+#### 📊 Example
+
+```markdown
+![Album Grid](https://www.russ.rest/lastfm-grid?username=RussMcKendrick)
+```
+
+![Album Grid](https://www.russ.rest/lastfm-grid?username=RussMcKendrick)
+
 ## 📱 Last.fm Ticker API
 
 Get a JSON feed of your recent Last.fm scrobbles, perfect for creating custom displays or integrations. For example [https://www.russ.fm/](https://www.russ.fm/).
