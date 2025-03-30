@@ -178,6 +178,32 @@ Base URL: `https://www.russ.rest/ticker`
 }
 ```
 
+## 📊 TRMNL Last.fm Stats
+
+Display your Last.fm profile statistics and top artists in a clean, organized layout optimized for TRMNL e-ink displays.
+
+### 🚀 Usage
+
+Base URL: `https://www.russ.rest/trmnl-lastfm-stats`
+
+#### 📝 Parameters
+
+- `username` - Last.fm username (default: [RussMckendrick](http://last.fm/user/RussMckendrick))
+- `debug` - Prints out debug information (optional)
+
+#### 🌟 Features
+
+- User profile information
+- Key statistics (total plays, playlists, tracks, artists)
+- Top 5 artists from the last week
+- High contrast design optimized for e-ink
+- 30-minute cache for better performance
+- CORS enabled for web integration
+
+#### 📊 Example
+
+Visit https://www.russ.rest/trmnl-lastfm-stats?username=RussMcKendrick or https://www.russ.rest/trmnl-lastfm-stats?username=RussMcKendrick&debug
+
 ## 🛠️ Technical Details
 
 - Built on Cloudflare Workers
