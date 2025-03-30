@@ -225,18 +225,18 @@ export async function onRequest(context) {
           </style>
         </head>
         <body class="environment trmnl">
+          <!-- Black pixel to establish rendering context -->
+          <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" width="1" height="1" style="position: absolute; top: 0; left: 0;" />
+          
           <div class="screen">
             <div class="view view--full">
               <div class="layout">
                 <div class="album-grid">
                   ${orderedImages.map((dataUrl, index) => `
                     <div class="album-cell">
-                      ${index === 0 ? `
-                        <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" width="1" height="1" style="position: absolute; top: 0; left: 0;" />
-                      ` : ''}
                       ${dataUrl ? `
                         <div style="width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; background: #fff; position: relative;">
-                          <img class="album-image" src="${dataUrl}" alt="Album ${index + 1}" style="max-width: 90%; max-height: 90%; position: relative; z-index: 1;" />
+                          <img class="album-image" src="${dataUrl}" alt="Album ${index + 1}" style="max-width: 90%; max-height: 90%;" />
                         </div>
                       ` : ''}
                     </div>
