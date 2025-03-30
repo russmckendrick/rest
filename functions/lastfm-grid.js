@@ -25,6 +25,25 @@ export async function onRequest(context) {
     const data = await lastfmResponse.json();
     const tracks = data.recenttracks.track;
 
+    // Fetch and convert images to base64
+    const processedTracks = await Promise.all(tracks.map(async (track) => {
+      const imageUrl = track.image.find(img => img.size === 'large')?.['#text'];
+      if (!imageUrl) return null;
+
+      try {
+        const imageResponse = await fetch(imageUrl);
+        if (!imageResponse.ok) return null;
+
+        const imageBuffer = await imageResponse.arrayBuffer();
+        const base64Image = btoa(String.fromCharCode(...new Uint8Array(imageBuffer)));
+        const contentType = imageResponse.headers.get('content-type') || 'image/jpeg';
+        return `data:${contentType};base64,${base64Image}`;
+      } catch (error) {
+        console.error('Failed to fetch image:', error);
+        return null;
+      }
+    }));
+
     // Generate TRMNL-compatible HTML markup
     const markup = `
       <!DOCTYPE html>
@@ -45,11 +64,13 @@ export async function onRequest(context) {
               display: flex;
               justify-content: center;
               align-items: center;
+              background: #fff;
             }
             .album-image {
               width: 100%;
               height: 100%;
               object-fit: contain;
+              filter: grayscale(100%) contrast(100%);
             }
           </style>
         </head>
@@ -58,13 +79,14 @@ export async function onRequest(context) {
             <div class="view view--full">
               <div class="layout">
                 <div class="album-grid">
-                  ${tracks.map((track) => {
-                    const imageUrl = track.image.find(img => img.size === 'large')?.['#text'] || '';
-                    return imageUrl ? `
+                  ${processedTracks.map((imageData) => {
+                    return imageData ? `
                       <div class="album-cell">
-                        <img class="album-image" src="${imageUrl}" alt="" />
+                        <img class="album-image" src="${imageData}" alt="" />
                       </div>
-                    ` : '';
+                    ` : `
+                      <div class="album-cell"></div>
+                    `;
                   }).join('')}
                 </div>
               </div>
