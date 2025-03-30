@@ -92,13 +92,13 @@ Base URL: `https://www.russ.rest/lastfm-last-played`
 
 ![Last Played](https://www.russ.rest/lastfm-last-played?username=RussMcKendrick&width=900)
 
-## 🎨 Last.fm Album Grid
+## 🎨 TRMNL Last.fm Album Grid
 
 Display a 2x5 grid of your top 10 album covers from the last week, optimized for TRMNL e-ink displays.
 
 ### 🚀 Usage
 
-Base URL: `https://www.russ.rest/lastfm-grid`
+Base URL: `https://www.russ.rest/trmnl-lastfm-grid`
 
 #### 📝 Parameters
 
@@ -114,11 +114,7 @@ Base URL: `https://www.russ.rest/lastfm-grid`
 
 #### 📊 Example
 
-```markdown
-![Album Grid](https://www.russ.rest/lastfm-grid?username=RussMcKendrick)
-```
-
-![Album Grid](https://www.russ.rest/lastfm-grid?username=RussMcKendrick)
+Visit https://www.russ.rest/lastfm-grid?username=RussMcKendrick
 
 ## 📱 Last.fm Ticker API
 
