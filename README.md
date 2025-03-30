@@ -26,6 +26,32 @@ Base URL: `https://www.russ.rest/trmnl-lastfm-grid`
 
 Visit https://www.russ.rest/trmnl-lastfm-grid?username=RussMcKendrick or https://www.russ.rest/trmnl-lastfm-grid?username=RussMcKendrick&debug
 
+## 🎵 TRMNL Last.fm Last Played
+
+Display your most recently played track from Last.fm with album artwork and track details, optimized for TRMNL e-ink displays.
+
+### 🚀 Usage
+
+Base URL: `https://www.russ.rest/trmnl-lastfm-last-played`
+
+#### 📝 Parameters
+
+- `username` - Last.fm username (default: [RussMckendrick](http://last.fm/user/RussMckendrick))
+- `debug` - Prints out debug information (optional)
+
+#### 🌟 Features
+
+- Large album artwork display
+- High contrast text optimized for e-ink
+- Track name, artist, and album details
+- Real-time updates with no caching
+- CORS enabled for web integration
+- Debug mode for troubleshooting
+
+#### 📊 Example
+
+Visit https://www.russ.rest/trmnl-lastfm-last-played?username=RussMcKendrick or https://www.russ.rest/trmnl-lastfm-last-played?username=RussMcKendrick&debug
+
 ## 🎧 Last.fm Weekly Artists and Albums
 
 Generate beautiful SVG visualizations of your Last.fm listening history for the last week. The function supports displaying both top artists and albums you've been listening to for the last 7 days.
