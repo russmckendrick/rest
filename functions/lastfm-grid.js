@@ -25,72 +25,64 @@ export async function onRequest(context) {
     const data = await lastfmResponse.json();
     const tracks = data.recenttracks.track;
 
-    // TRMNL screen dimensions
-    const screenWidth = 800;
-    const screenHeight = 480;
-    
-    // Calculate grid dimensions
-    const gridCols = 5;
-    const gridRows = 2;
-    const cellWidth = screenWidth / gridCols;
-    const cellHeight = screenHeight / gridRows;
-    const imageSize = Math.min(cellWidth * 0.9, cellHeight * 0.9); // 90% of cell size
-    const imagePadding = (cellWidth - imageSize) / 2;
-
-    // Function to escape XML special characters
-    const escapeXml = (unsafe) => {
-      if (!unsafe) return '';
-      return unsafe
-        .replace(/[<>&'"]/g, (c) => {
-          switch (c) {
-            case '<': return '&lt;';
-            case '>': return '&gt;';
-            case '&': return '&amp;';
-            case '\'': return '&apos;';
-            case '"': return '&quot;';
-          }
-        });
-    };
-
-    // Generate SVG
-    const svg = `<?xml version="1.0" encoding="UTF-8"?>
-      <svg xmlns="http://www.w3.org/2000/svg" width="${screenWidth}" height="${screenHeight}" viewBox="0 0 ${screenWidth} ${screenHeight}">
-        <style>
-          .album-image { filter: grayscale(100%); }
-        </style>
-        
-        <!-- Background -->
-        <rect width="${screenWidth}" height="${screenHeight}" fill="#FFFFFF"/>
-        
-        <!-- Album Grid -->
-        ${tracks.map((track, index) => {
-          const row = Math.floor(index / gridCols);
-          const col = index % gridCols;
-          const x = col * cellWidth;
-          const y = row * cellHeight;
-          const imageUrl = track.image.find(img => img.size === 'large')?.['#text'] || '';
-          const safeImageUrl = escapeXml(imageUrl);
-          
-          return `
-            <g transform="translate(${x}, ${y})">
-              ${safeImageUrl ? `
-                <image 
-                  href="${safeImageUrl}"
-                  x="${imagePadding}"
-                  y="${imagePadding}"
-                  width="${imageSize}"
-                  height="${imageSize}"
-                  class="album-image"
-                />` : ''}
-            </g>
-          `;
-        }).join('')}
-      </svg>
+    // Generate TRMNL-compatible HTML markup
+    const markup = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <link rel="stylesheet" href="https://usetrmnl.com/css/latest/plugins.css">
+          <script src="https://usetrmnl.com/js/latest/plugins.js"></script>
+          <style>
+            .album-grid {
+              display: grid;
+              grid-template-columns: repeat(5, 1fr);
+              grid-template-rows: repeat(2, 1fr);
+              gap: 10px;
+              padding: 10px;
+            }
+            .album-cell {
+              aspect-ratio: 1;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+            }
+            .album-image {
+              width: 100%;
+              height: 100%;
+              object-fit: contain;
+            }
+          </style>
+        </head>
+        <body class="environment trmnl">
+          <div class="screen">
+            <div class="view view--full">
+              <div class="layout">
+                <div class="album-grid">
+                  ${tracks.map((track) => {
+                    const imageUrl = track.image.find(img => img.size === 'large')?.['#text'] || '';
+                    return imageUrl ? `
+                      <div class="album-cell">
+                        <img class="album-image" src="${imageUrl}" alt="" />
+                      </div>
+                    ` : '';
+                  }).join('')}
+                </div>
+              </div>
+              
+              <div class="title_bar">
+                <img class="image" src="https://usetrmnl.com/images/plugins/trmnl--render.svg" />
+                <span class="title">Recent Albums</span>
+                <span class="instance">${username}'s Last.fm</span>
+              </div>
+            </div>
+          </div>
+        </body>
+      </html>
     `.trim();
 
-    return new Response(svg, {
+    return new Response(markup, {
       headers: {
-        'Content-Type': 'image/svg+xml',
+        'Content-Type': 'text/html',
         'Cache-Control': 'public, max-age=1800',
         ...corsHeaders,
       },
