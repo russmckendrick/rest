@@ -94,6 +94,12 @@ export async function onRequest(context) {
     const validImages = albumImages.filter(img => img !== null);
     if (debug) debugInfo.push(`Successfully fetched ${validImages.length} album images`);
 
+    // Create an array of 10 slots, fill with images or null
+    const orderedImages = Array(10).fill(null);
+    validImages.forEach(img => {
+      orderedImages[img.index] = img.dataUrl;
+    });
+
     // Generate TRMNL-compatible HTML markup
     const markup = `
       <!DOCTYPE html>
@@ -143,13 +149,10 @@ export async function onRequest(context) {
             <div class="view view--full">
               <div class="layout">
                 <div class="album-grid">
-                  ${validImages.map(({ dataUrl }, index) => `
+                  ${orderedImages.map((dataUrl, index) => `
                     <div class="album-cell">
-                      <img class="album-image" src="${dataUrl}" alt="Album ${index + 1}" />
+                      ${dataUrl ? `<img class="album-image" src="${dataUrl}" alt="Album ${index + 1}" />` : ''}
                     </div>
-                  `).join('')}
-                  ${Array(10 - validImages.length).fill(0).map(() => `
-                    <div class="album-cell"></div>
                   `).join('')}
                 </div>
               </div>
