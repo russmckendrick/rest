@@ -61,16 +61,18 @@ export async function onRequest(context) {
             /* Content Container */
             .content {
               flex: 1;
-              padding: 24px;
-              overflow-y: auto;
+              padding: 16px;
+              display: flex;
+              flex-direction: column;
+              min-height: 0;
             }
             
             /* Header Section */
             .header {
               display: flex;
               align-items: center;
-              margin-bottom: 32px;
-              padding-bottom: 16px;
+              margin-bottom: 16px;
+              padding-bottom: 8px;
               border-bottom: 2px solid #000;
             }
             
@@ -79,105 +81,102 @@ export async function onRequest(context) {
             }
             
             .username {
-              font-size: 36px;
+              font-size: 32px;
               font-weight: bold;
-              margin-bottom: 8px;
+              margin-bottom: 4px;
               color: #000;
-              line-height: 1.2;
+              line-height: 1;
             }
             
             .join-date {
-              font-size: 24px;
+              font-size: 20px;
               color: #000;
-              line-height: 1.2;
+              line-height: 1;
             }
             
             /* Stats Grid */
             .stats-grid {
               display: grid;
-              grid-template-columns: repeat(2, 1fr);
+              grid-template-columns: repeat(4, 1fr);
               gap: 24px;
-              margin-bottom: 32px;
+              margin-bottom: 24px;
+              padding: 0 16px;
             }
             
             .stat-box {
               background: #fff;
-              border: 2px solid #000;
-              padding: 20px;
               text-align: center;
-              transition: all 0.2s ease;
-            }
-            
-            .stat-box:hover {
-              background: #f8f8f8;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
             }
             
             .stat-value {
-              font-size: 32px;
+              font-size: 42px;
               font-weight: bold;
               color: #000;
               margin-bottom: 8px;
-              line-height: 1.2;
+              line-height: 1;
             }
             
             .stat-label {
-              font-size: 20px;
+              font-size: 18px;
               color: #000;
-              line-height: 1.2;
+              line-height: 1;
             }
             
             /* Top Artists Section */
             .top-artists {
-              margin-top: 32px;
+              margin-top: 24px;
+              flex: 1;
+              min-height: 0;
             }
             
             .top-artists-title {
-              font-size: 28px;
+              font-size: 24px;
               font-weight: bold;
               margin-bottom: 16px;
               color: #000;
-              line-height: 1.2;
+              line-height: 1;
+              text-align: center;
             }
             
             .artist-list {
-              display: flex;
-              flex-direction: column;
-              gap: 12px;
+              display: grid;
+              grid-template-columns: repeat(2, 1fr);
+              gap: 16px;
+              padding: 0 16px;
             }
             
             .artist-item {
               display: flex;
               justify-content: space-between;
               align-items: center;
-              padding: 12px 20px;
+              padding: 12px 16px;
               background: #fff;
               border: 1px solid #000;
-              transition: all 0.2s ease;
-            }
-            
-            .artist-item:hover {
-              background: #f8f8f8;
             }
             
             .artist-name {
-              font-size: 24px;
+              font-size: 20px;
               color: #000;
-              line-height: 1.2;
+              line-height: 1;
             }
             
             .artist-plays {
-              font-size: 24px;
+              font-size: 20px;
               color: #000;
-              line-height: 1.2;
+              line-height: 1;
             }
             
             /* Title Bar */
             .title_bar {
-              height: 80px;
+              height: 60px;
               display: flex;
               align-items: center;
               justify-content: space-between;
-              padding: 0 24px;
+              padding: 0 16px;
               background: #fff;
               border-top: 2px solid #000;
             }
@@ -185,48 +184,19 @@ export async function onRequest(context) {
             /* TRMNL Specific Styles */
             .screen {
               background: #fff !important;
+              height: 100vh;
+              overflow: hidden;
             }
             
             .view {
               background: #fff !important;
+              height: 100%;
+              overflow: hidden;
             }
             
             /* Debug Mode */
             .debug-info {
-              font-family: monospace;
-              font-size: 12px;
-              padding: 10px;
-              background: #f0f0f0;
-              margin-top: 20px;
-              white-space: pre-wrap;
-            }
-            
-            /* Responsive Adjustments */
-            @media (max-width: 600px) {
-              .stats-grid {
-                grid-template-columns: 1fr;
-              }
-              
-              .username {
-                font-size: 28px;
-              }
-              
-              .join-date {
-                font-size: 20px;
-              }
-              
-              .stat-value {
-                font-size: 28px;
-              }
-              
-              .stat-label {
-                font-size: 18px;
-              }
-              
-              .artist-name,
-              .artist-plays {
-                font-size: 20px;
-              }
+              display: none;
             }
           </style>
         </head>
