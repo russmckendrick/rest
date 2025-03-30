@@ -112,7 +112,7 @@ export async function onRequest(context) {
               
               <div class="title_bar">
                 <img class="image" src="https://usetrmnl.com/images/plugins/trmnl--render.svg" />
-                <span class="title">Recent Albums</span>
+                <span class="title">Recently played</span>
                 <span class="instance">${username}'s Last.fm</span>
               </div>
             </div>
