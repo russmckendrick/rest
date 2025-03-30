@@ -113,17 +113,19 @@ export async function onRequest(context) {
             }
             
             .stat-value {
-              font-size: 42px;
-              font-weight: bold;
+              font-family: 'NicoPups', monospace;
+              font-size: 48px;
+              font-weight: normal;
               color: #000;
               margin-bottom: 4px;
               line-height: 1;
             }
             
             .stat-label {
-              font-size: 18px;
+              font-size: 16px;
               color: #000;
               line-height: 1;
+              text-transform: uppercase;
             }
             
             /* Top Artists Section */
@@ -140,12 +142,13 @@ export async function onRequest(context) {
               color: #000;
               line-height: 1;
               text-align: center;
+              text-transform: uppercase;
             }
             
             .artist-list {
               display: grid;
               grid-template-columns: repeat(2, 1fr);
-              gap: 16px;
+              gap: 12px;
               padding: 0 16px;
             }
             
@@ -153,21 +156,29 @@ export async function onRequest(context) {
               display: flex;
               justify-content: space-between;
               align-items: center;
-              padding: 12px 16px;
+              padding: 8px 12px;
               background: #fff;
               border: 1px solid #000;
+              min-height: 40px;
             }
             
             .artist-name {
-              font-size: 20px;
+              font-size: 18px;
               color: #000;
-              line-height: 1;
+              line-height: 1.2;
+              margin-right: 12px;
+              flex: 1;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
             }
             
             .artist-plays {
-              font-size: 20px;
+              font-family: 'NicoPups', monospace;
+              font-size: 18px;
               color: #000;
               line-height: 1;
+              white-space: nowrap;
             }
             
             /* Title Bar */
@@ -239,7 +250,7 @@ export async function onRequest(context) {
                       ${topArtists.topartists.artist.map(artist => `
                         <div class="artist-item">
                           <div class="artist-name">${artist.name}</div>
-                          <div class="artist-plays">${parseInt(artist.playcount).toLocaleString()} plays</div>
+                          <div class="artist-plays">${parseInt(artist.playcount)} plays</div>
                         </div>
                       `).join('')}
                     </div>
