@@ -190,8 +190,8 @@ export async function onRequest(context) {
               width: 100%;
               height: 100%;
               object-fit: contain;
-              filter: grayscale(100%) contrast(200%) brightness(150%) saturate(0);
-              image-rendering: pixelated;
+              filter: grayscale(100%) contrast(150%) brightness(120%) saturate(0);
+              image-rendering: auto;
               -webkit-font-smoothing: none;
               mix-blend-mode: multiply;
             }
@@ -220,8 +220,8 @@ export async function onRequest(context) {
             }
             /* Ensure proper image rendering */
             img {
+              image-rendering: auto;
               image-rendering: -webkit-optimize-contrast;
-              image-rendering: crisp-edges;
             }
           </style>
         </head>
