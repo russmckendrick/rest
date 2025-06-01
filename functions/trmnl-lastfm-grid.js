@@ -190,7 +190,7 @@ export async function onRequest(context) {
               width: 100%;
               height: 100%;
               object-fit: contain;
-              filter: grayscale(100%) contrast(120%) brightness(100%) saturate(0);
+              filter: grayscale(100%);
               image-rendering: auto;
               -webkit-font-smoothing: none;
               mix-blend-mode: multiply;
