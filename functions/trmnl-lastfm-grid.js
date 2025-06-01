@@ -236,7 +236,7 @@ export async function onRequest(context) {
                     <div class="album-cell">
                       ${dataUrl ? `
                         <div style="width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; background: #fff;">
-                          <img class="album-image" src="${dataUrl}" alt="Album ${index + 1}" />
+                          <img class="image-dither" src="${dataUrl}" alt="Album ${index + 1}" />
                         </div>
                       ` : ''}
                     </div>

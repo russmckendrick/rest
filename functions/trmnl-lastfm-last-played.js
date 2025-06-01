@@ -198,7 +198,7 @@ export async function onRequest(context) {
                 <div class="last-played-container">
                   <div class="album-art">
                     ${albumArtDataUri ? `
-                      <img class="album-image" src="${albumArtDataUri}" alt="Album Art" />
+                      <img class="image-dither" src="${albumArtDataUri}" alt="Album Art" />
                     ` : ''}
                   </div>
                   <div class="track-info">
