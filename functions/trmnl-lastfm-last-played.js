@@ -122,10 +122,6 @@ export async function onRequest(context) {
               width: 100%;
               height: 100%;
               object-fit: contain;
-              filter: grayscale(100%);
-              image-rendering: pixelated;
-              -webkit-font-smoothing: none;
-              mix-blend-mode: multiply;
             }
             .track-info {
               flex-grow: 1;
@@ -198,7 +194,7 @@ export async function onRequest(context) {
                 <div class="last-played-container">
                   <div class="album-art">
                     ${albumArtDataUri ? `
-                      <img class="image-dither" src="${albumArtDataUri}" alt="Album Art" />
+                      <img class="image-dither album-image" src="${albumArtDataUri}" alt="Album Art" />
                     ` : ''}
                   </div>
                   <div class="track-info">

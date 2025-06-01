@@ -190,10 +190,8 @@ export async function onRequest(context) {
               width: 100%;
               height: 100%;
               object-fit: contain;
-              filter: grayscale(100%);
               image-rendering: auto;
               -webkit-font-smoothing: none;
-              mix-blend-mode: multiply;
             }
             .title_bar {
               height: 80px;
@@ -236,7 +234,7 @@ export async function onRequest(context) {
                     <div class="album-cell">
                       ${dataUrl ? `
                         <div style="width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; background: #fff;">
-                          <img class="image-dither" src="${dataUrl}" alt="Album ${index + 1}" />
+                          <img class="image-dither album-image" src="${dataUrl}" alt="Album ${index + 1}" />
                         </div>
                       ` : ''}
                     </div>
