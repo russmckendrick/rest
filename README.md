@@ -142,41 +142,6 @@ Base URL: `https://www.russ.rest/lastfm-last-played`
 
 ![Last Played](https://www.russ.rest/lastfm-last-played?username=RussMcKendrick&width=900)
 
-## 📱 Last.fm Ticker API
-
-Get a JSON feed of your recent Last.fm scrobbles, perfect for creating custom displays or integrations. For example [https://www.russ.fm/](https://www.russ.fm/).
-
-### 🚀 Usage
-
-Base URL: `https://www.russ.rest/ticker`
-
-#### 📝 Parameters
-
-- `username` - Last.fm username (default: [RussMckendrick](http://last.fm/user/RussMckendrick))
-
-#### 🌟 Features
-
-- Returns last 100 tracks
-- Includes "now playing" status
-- JSON formatted response
-- CORS enabled
-- 60-second cache for optimal performance
-
-#### 📊 Example Response
-
-```json
-{
-  "tracks": [
-    {
-      "name": "Track Name",
-      "artist": "Artist Name",
-      "nowPlaying": true,
-      "timestamp": 1699999999
-    },
-    // ... more tracks
-  ]
-}
-```
 
 ## 📊 TRMNL Last.fm Stats
 
