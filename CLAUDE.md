@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Cloudflare Workers project that provides Last.fm-powered REST APIs for displaying music listening data. The project consists of serverless functions that generate dynamic SVG visualizations and HTML pages, optimized for various displays including e-ink TRMNL devices.
+This is a Cloudflare Workers project that provides Last.fm-powered REST APIs for displaying music listening data. The project generates dynamic SVG visualizations and HTML pages, optimized for various displays including e-ink TRMNL devices.
+
+**Live Site:** https://www.russ.rest
 
 ## Architecture
 
@@ -28,12 +30,23 @@ src/
 │   ├── trmnl-lastfm-grid.ts
 │   ├── trmnl-lastfm-last-played.ts
 │   └── trmnl-lastfm-stats.ts
-└── templates/            # Template components
-    ├── svg/lastfm-logo.ts
-    └── html/trmnl-base.ts
+├── templates/            # Template components
+│   ├── docs.ts           # Documentation page templates
+│   ├── svg/lastfm-logo.ts
+│   └── html/trmnl-base.ts
+└── content/              # Documentation content (separated from templates)
+    ├── index.ts
+    ├── home.ts
+    ├── lastfm-chart.ts
+    ├── lastfm-last-played.ts
+    ├── trmnl-grid.ts
+    ├── trmnl-last-played.ts
+    └── trmnl-stats.ts
 ```
 
 ### API Endpoints
+- `/` - Documentation homepage
+- `/docs/*` - Per-endpoint documentation pages
 - `/lastfm-chart` - Weekly top artists/albums SVG chart
 - `/lastfm-last-played` - Last played track SVG visualization
 - `/trmnl-lastfm-grid` - 2x5 album grid for e-ink displays
@@ -50,7 +63,7 @@ src/
 
 ### Prerequisites
 - Node.js 18+
-- pnpm
+- pnpm 10.x (specified in package.json `packageManager` field)
 
 ### Commands
 ```bash
@@ -58,8 +71,11 @@ pnpm install          # Install dependencies
 pnpm run dev          # Start local dev server
 pnpm run typecheck    # Run TypeScript type check
 pnpm run lint         # Run ESLint
+pnpm run lint:fix     # Fix ESLint issues
 pnpm run test         # Run tests in watch mode
 pnpm run test:run     # Run tests once
+pnpm run test:coverage # Run tests with coverage
+pnpm run check        # Run typecheck, lint, and tests
 pnpm run deploy       # Deploy to Cloudflare
 ```
 
@@ -83,6 +99,8 @@ pnpm run dev
 1. Create handler in `src/handlers/`
 2. Add to exports in `src/handlers/index.ts`
 3. Add route in `src/index.ts`
+4. Create documentation content in `src/content/`
+5. Add documentation route in `src/templates/docs.ts`
 
 ### Handler Structure
 ```typescript
@@ -115,11 +133,26 @@ pnpm run test:coverage      # Run with coverage report
 
 ## Deployment
 
+### GitHub Actions (Automated)
 Deployment is automated via GitHub Actions on push to `main` branch. Requires these repository secrets:
-- `CLOUDFLARE_API_TOKEN`
-- `CLOUDFLARE_ACCOUNT_ID`
+- `CLOUDFLARE_API_TOKEN` - Create at https://dash.cloudflare.com/profile/api-tokens
+- `CLOUDFLARE_ACCOUNT_ID` - Found in Cloudflare dashboard sidebar
 
-Manual deployment:
+### Manual Deployment
 ```bash
-CLOUDFLARE_API_TOKEN=xxx pnpm run deploy
+CLOUDFLARE_API_TOKEN=xxx CLOUDFLARE_ACCOUNT_ID=yyy pnpm run deploy
 ```
+
+### Wrangler Configuration
+The `wrangler.toml` configures:
+- Custom domains: `www.russ.rest` and `russ.rest`
+- `workers_dev = true` for workers.dev subdomain
+- `preview_urls = true` for PR previews
+
+## Tech Stack
+- Cloudflare Workers
+- TypeScript (strict mode)
+- Vitest for testing
+- ESLint 9.x (flat config)
+- Tailwind CSS (via CDN for docs)
+- pnpm 10.x
