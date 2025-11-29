@@ -171,12 +171,44 @@ Visit https://www.russ.rest/trmnl-lastfm-stats?username=RussMcKendrick or https:
 
 ## 🛠️ Technical Details
 
-- Built on Cloudflare Workers
+- Built on Cloudflare Workers with TypeScript
 - SVG generation for visual components
+- TRMNL Framework v2 compatible HTML for e-ink displays
 - Base64 encoded images for optimal delivery
 - Automatic scaling and responsive design
-- Error handling with friendly messages
-- Cross-Origin Resource Sharing (CORS) enabled
+- Input validation and security measures
+- 101 unit tests with Vitest
+- CI/CD via GitHub Actions
+
+### Development
+
+```bash
+# Install dependencies
+pnpm install
+
+# Start local dev server
+pnpm run dev
+
+# Run tests
+pnpm run test:run
+
+# Type check
+pnpm run typecheck
+
+# Lint
+pnpm run lint
+```
+
+### Environment Setup
+
+Create a `.dev.vars` file for local development:
+```
+LASTFM_API_KEY=your_api_key_here
+```
+
+For deployment, add these secrets to your GitHub repository:
+- `CLOUDFLARE_API_TOKEN`
+- `CLOUDFLARE_ACCOUNT_ID`
 
 ## 📄 License
 
