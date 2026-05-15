@@ -23,9 +23,13 @@ const MAX_LIMIT = 200;
 const DEFAULT_LIMIT = 75;
 const DEFAULT_PERIOD: LastFmPeriod = 'overall';
 const ASPECT_RATIO = 1.6;
-const CHAR_WIDTH_FACTOR = 0.58;
-const LINE_HEIGHT_FACTOR = 1.05;
-const BOX_PADDING = 1;
+// Tight collision boxes: Arial caps ≈0.55em wide, mixed ≈0.52em. The slightly
+// generous width keeps bold caps from overlapping; the tighter height lets
+// adjacent rows nearly touch like the reference image.
+const CHAR_WIDTH_FACTOR_REG = 0.52;
+const CHAR_WIDTH_FACTOR_BOLD = 0.58;
+const LINE_HEIGHT_FACTOR = 0.92;
+const BOX_PADDING = 0;
 const MAX_SPIRAL_STEPS = 15000;
 
 export interface ArtistDatum {
@@ -68,7 +72,10 @@ export function fontSizeFor(
   const logMax = Math.log(Math.max(1, maxPlay));
   const logCur = Math.log(Math.max(1, playcount));
   const t = (logCur - logMin) / (logMax - logMin);
-  return minFont + (maxFont - minFont) * t;
+  // Power curve emphasises the top end so the biggest few words dominate,
+  // while leaving the long tail at a readable but small size.
+  const curved = Math.pow(t, 2.2);
+  return minFont + (maxFont - minFont) * curved;
 }
 
 function aabbOverlap(a: PlacedBox, b: PlacedBox): boolean {
@@ -184,7 +191,7 @@ export function renderWordCloudSvg(artists: ArtistDatum[], width: number, debug 
   const minPlay = last.playcount;
 
   const minFont = Math.max(8, width / 110);
-  const maxFont = Math.max(minFont + 4, width / 16);
+  const maxFont = Math.max(minFont + 4, width / 12);
 
   const boldCutoff = Math.max(1, Math.ceil(sorted.length * 0.15));
 
@@ -196,15 +203,44 @@ export function renderWordCloudSvg(artists: ArtistDatum[], width: number, debug 
   const placed: PlacedBox[] = [];
 
   sorted.forEach((artist, i) => {
-    const fontSize = fontSizeFor(artist.playcount, minPlay, maxPlay, minFont, maxFont);
-    const rotated = i >= 3 && i % 5 === 2;
-    const weight = i < boldCutoff ? 700 : 400;
+    let fontSize = fontSizeFor(artist.playcount, minPlay, maxPlay, minFont, maxFont);
+    const isBold = i < boldCutoff;
+    const weight = isBold ? 700 : 400;
+    // Bold tier uses upper-case display like the reference image
+    // ("AMPLIFIER", "OCEANSIZE", …); regular tier keeps natural casing.
+    const displayName = isBold ? artist.name.toUpperCase() : artist.name;
+    const charFactor = isBold ? CHAR_WIDTH_FACTOR_BOLD : CHAR_WIDTH_FACTOR_REG;
 
-    const textW = artist.name.length * fontSize * CHAR_WIDTH_FACTOR + BOX_PADDING * 2;
-    const textH = fontSize * LINE_HEIGHT_FACTOR + BOX_PADDING * 2;
+    // Decide orientation: rotate ~30% of mid-tier artists for variety, and
+    // auto-rotate words that would otherwise dominate the canvas width.
+    let textW = displayName.length * fontSize * charFactor + BOX_PADDING * 2;
+    let textH = fontSize * LINE_HEIGHT_FACTOR + BOX_PADDING * 2;
+    const tooWide = textW > width * 0.55;
+    const indexRotate = i >= 3 && (i % 7 === 2 || i % 7 === 5);
+    let rotated = tooWide || indexRotate;
+
+    // Shrink-to-fit: if neither orientation fits the canvas, shrink. Long names
+    // (e.g. "Public Service Broadcasting") would otherwise be dropped.
+    while (true) {
+      const boxW = rotated ? textH : textW;
+      const boxH = rotated ? textW : textH;
+      if (boxW <= width && boxH <= height) break;
+      if (!rotated && textW > width && textH < width) {
+        rotated = true;
+        continue;
+      }
+      if (rotated && textW > height && textW * 0.7 < width) {
+        rotated = false;
+        continue;
+      }
+      if (fontSize <= minFont) break;
+      fontSize = Math.max(minFont, fontSize * 0.9);
+      textW = displayName.length * fontSize * charFactor + BOX_PADDING * 2;
+      textH = fontSize * LINE_HEIGHT_FACTOR + BOX_PADDING * 2;
+    }
+
     const boxW = rotated ? textH : textW;
     const boxH = rotated ? textW : textH;
-
     if (boxW > width || boxH > height) return;
 
     const candidate: PlacedBox = {
@@ -215,7 +251,7 @@ export function renderWordCloudSvg(artists: ArtistDatum[], width: number, debug 
       fontSize,
       rotated,
       weight,
-      name: artist.name,
+      name: displayName,
     };
 
     const result = placeWord(candidate, placed, width, height, cx, cy, rng);
@@ -239,7 +275,7 @@ export function renderWordCloudSvg(artists: ArtistDatum[], width: number, debug 
         .join('')
     : '';
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" font-family="Arial, Helvetica, sans-serif" fill="#111111"><rect width="${width}" height="${height}" fill="#ffffff"/>${texts}${debugRects}</svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" font-family="Arial, Helvetica, sans-serif" fill="#111111" style="letter-spacing:-0.02em"><rect width="${width}" height="${height}" fill="#ffffff"/>${texts}${debugRects}</svg>`;
 }
 
 export async function handleLastFmWordcloud(ctx: HandlerContext): Promise<Response> {

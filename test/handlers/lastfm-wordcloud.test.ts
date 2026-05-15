@@ -88,13 +88,18 @@ describe('renderWordCloudSvg', () => {
     const svg = renderWordCloudSvg(artists, 600);
     expect(svg).toContain('<svg');
     expect(svg).toContain('viewBox="0 0 600 375"');
-    expect(svg).toContain('Amplifier');
+    // Bold tier is rendered upper-case to match the reference style.
+    expect(svg).toContain('AMPLIFIER');
     expect(svg).toContain('Oceansize');
     expect(svg).toContain('Rush');
   });
 
   it('escapes XML-unsafe characters in artist names', () => {
-    const artists = [{ name: 'AC/DC <Live> & Friends', playcount: 100 }];
+    // Use a tail artist (small playcount among many) so it's not uppercased.
+    const artists = Array.from({ length: 20 }, (_, i) => ({
+      name: i === 19 ? 'AC/DC <Live> & Friends' : `Filler ${i}`,
+      playcount: 1000 - i * 30,
+    }));
     const svg = renderWordCloudSvg(artists, 500);
     expect(svg).toContain('&lt;Live&gt;');
     expect(svg).toContain('&amp;');
