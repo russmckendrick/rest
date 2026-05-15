@@ -1,0 +1,12 @@
+---
+import { Code } from 'astro:components';
+
+interface Props {
+  code: string;
+  lang?: string;
+}
+
+const { code, lang = 'plaintext' } = Astro.props;
+---
+
+<Code code={code} lang={lang as any} theme="solarized-dark" wrap />

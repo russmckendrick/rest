@@ -1,0 +1,47 @@
+---
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="site-footer__inner">
+    <div class="site-footer__brand">
+      <a href="/" class="brand">
+        <span class="brand__mark" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+            <rect x="1" y="1" width="30" height="30" rx="6" fill="none" stroke="currentColor" stroke-width="1.5"/>
+            <text x="16" y="22" font-family="ui-monospace, monospace" font-size="16" font-weight="700" text-anchor="middle" fill="currentColor">r</text>
+          </svg>
+        </span>
+        <span>russ.rest</span>
+      </a>
+      <p class="site-footer__tagline">Last.fm-powered REST APIs for charts, displays, and e-ink devices.</p>
+    </div>
+    <div>
+      <h4>Last.fm</h4>
+      <ul>
+        <li><a href="/docs/lastfm-chart">Weekly charts</a></li>
+        <li><a href="/docs/lastfm-last-played">Last played</a></li>
+        <li><a href="/docs/lastfm-wordcloud">Word cloud</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>TRMNL</h4>
+      <ul>
+        <li><a href="/docs/trmnl-lastfm-grid">Album grid</a></li>
+        <li><a href="/docs/trmnl-lastfm-last-played">Last played</a></li>
+        <li><a href="/docs/trmnl-lastfm-stats">Profile stats</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Source</h4>
+      <ul>
+        <li><a href="https://github.com/russmckendrick/rest" rel="noopener" target="_blank">GitHub repository</a></li>
+        <li><a href="https://github.com/russmckendrick/rest/issues" rel="noopener" target="_blank">Issues</a></li>
+        <li><a href="https://www.last.fm/api" rel="noopener" target="_blank">Last.fm API</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="site-footer__bottom">
+    Built on Cloudflare Workers. &copy; {year} Russ McKendrick.
+  </div>
+</footer>

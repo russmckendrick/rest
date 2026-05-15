@@ -1,5 +1,10 @@
 /**
- * Main router for russ-rest Cloudflare Worker
+ * Main router for russ-rest Cloudflare Worker.
+ *
+ * The Worker only handles API endpoints. The documentation pages (/, /docs/*)
+ * are served as static assets from ./dist, built by the Astro project in
+ * docs/. See wrangler.toml's [assets] block — static assets are matched
+ * first, so unmatched paths fall through to this Worker.
  */
 
 import type { Env, HandlerContext, RouteHandler, RequestParams } from './types';
@@ -13,18 +18,7 @@ import {
   handleTrmnlLastFmLastPlayed,
   handleTrmnlLastFmStats,
 } from './handlers';
-import {
-  renderHomePage,
-  renderLastfmChartDocs,
-  renderLastfmLastPlayedDocs,
-  renderLastfmWordcloudDocs,
-  renderTrmnlGridDocs,
-  renderTrmnlLastPlayedDocs,
-  renderTrmnlStatsDocs,
-  render404Page,
-} from './templates/docs';
 
-// API routes that require Last.fm API
 const apiRoutes: Record<string, RouteHandler> = {
   '/lastfm-chart': handleLastFmChart,
   '/lastfm-last-played': handleLastFmLastPlayed,
@@ -34,51 +28,18 @@ const apiRoutes: Record<string, RouteHandler> = {
   '/trmnl-lastfm-stats': handleTrmnlLastFmStats,
 };
 
-// Documentation routes (static HTML)
-const docRoutes: Record<string, () => string> = {
-  '/': renderHomePage,
-  '/docs/lastfm-chart': renderLastfmChartDocs,
-  '/docs/lastfm-last-played': renderLastfmLastPlayedDocs,
-  '/docs/lastfm-wordcloud': renderLastfmWordcloudDocs,
-  '/docs/trmnl-lastfm-grid': renderTrmnlGridDocs,
-  '/docs/trmnl-lastfm-last-played': renderTrmnlLastPlayedDocs,
-  '/docs/trmnl-lastfm-stats': renderTrmnlStatsDocs,
-};
-
-function createHtmlResponse(html: string, status = 200): Response {
-  return new Response(html, {
-    status,
-    headers: {
-      'Content-Type': 'text/html; charset=utf-8',
-      'Cache-Control': 'public, max-age=3600',
-    },
-  });
-}
-
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
-    // Handle CORS preflight
     if (request.method === 'OPTIONS') {
       return handleOptions();
     }
 
     const url = new URL(request.url);
-    const pathname = url.pathname;
-
-    // Check for documentation routes first
-    const docHandler = docRoutes[pathname];
-    if (docHandler) {
-      return createHtmlResponse(docHandler());
-    }
-
-    // Check for API routes
-    const apiHandler = apiRoutes[pathname];
+    const apiHandler = apiRoutes[url.pathname];
     if (!apiHandler) {
-      // Return 404 page for unknown paths
-      return createHtmlResponse(render404Page(), 404);
+      return createErrorResponse('Not found', 404);
     }
 
-    // Parse and validate request parameters
     const paramsResult = parseRequestParams(url, env);
     if (!paramsResult.success) {
       return createErrorResponse(paramsResult.error ?? 'Invalid parameters', 400);

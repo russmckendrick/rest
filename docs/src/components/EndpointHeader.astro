@@ -1,0 +1,13 @@
+---
+interface Props {
+  method: string;
+  path: string;
+}
+
+const { method, path } = Astro.props;
+---
+
+<div class="endpoint-header">
+  <span class="endpoint-header__method">{method}</span>
+  <code class="endpoint-header__path">{path}</code>
+</div>

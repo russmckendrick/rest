@@ -1,0 +1,50 @@
+---
+import '../styles/global.css';
+import SiteHeader from '../components/SiteHeader.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import Sidebar from '../components/Sidebar.astro';
+import OnThisPage from '../components/OnThisPage.astro';
+import type { Heading } from '../components/OnThisPage.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  headings?: Heading[];
+}
+
+const { title, description, headings = [] } = Astro.props;
+const pathname = Astro.url.pathname;
+const pageTitle = title === 'Documentation' ? 'russ.rest — Documentation' : `${title} — russ.rest`;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={`https://www.russ.rest${pathname}`} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    />
+  </head>
+  <body>
+    <SiteHeader />
+    <div class="docs-shell">
+      <Sidebar pathname={pathname} />
+      <main class="docs-main">
+        <slot />
+      </main>
+      <OnThisPage headings={headings} />
+    </div>
+    <SiteFooter />
+  </body>
+</html>

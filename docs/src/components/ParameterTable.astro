@@ -1,0 +1,36 @@
+---
+export interface ParamRow {
+  name: string;
+  description: string;
+  default?: string;
+  optional?: boolean;
+}
+
+interface Props {
+  rows: ParamRow[];
+}
+
+const { rows } = Astro.props;
+---
+
+<table class="param-table">
+  <thead>
+    <tr>
+      <th scope="col">Parameter</th>
+      <th scope="col">Default</th>
+      <th scope="col">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    {rows.map((row) => (
+      <tr>
+        <td class="name">
+          {row.name}
+          {row.optional && <span class="optional-tag">optional</span>}
+        </td>
+        <td class="default">{row.default ?? '—'}</td>
+        <td>{row.description}</td>
+      </tr>
+    ))}
+  </tbody>
+</table>

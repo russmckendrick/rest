@@ -1,0 +1,30 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro';
+import EndpointHeader from '../../components/EndpointHeader.astro';
+import ParameterTable from '../../components/ParameterTable.astro';
+import { trmnlStatsContent as c } from '../../data/trmnl-stats';
+
+const headings = [
+  { depth: 2, slug: 'parameters', text: 'Parameters' },
+  { depth: 2, slug: 'preview', text: 'Preview' },
+  { depth: 2, slug: 'trmnl-setup', text: 'TRMNL setup' },
+];
+---
+
+<DocsLayout title={c.title} description={c.description} headings={headings}>
+  <p class="label">TRMNL</p>
+  <h1>{c.title}</h1>
+  <p>{c.endpoint.description}</p>
+  <EndpointHeader method={c.endpoint.method} path={c.endpoint.path} />
+
+  <h2 id="parameters">Parameters</h2>
+  <ParameterTable rows={c.parameters} />
+
+  <h2 id="preview">Preview</h2>
+  <p><a href={c.preview.linkHref}>{c.preview.linkText}</a> ({c.preview.url}).</p>
+
+  <h2 id="trmnl-setup">TRMNL setup</h2>
+  <ol>
+    {c.trmnlSetup.steps.map((step) => <li>{step}</li>)}
+  </ol>
+</DocsLayout>

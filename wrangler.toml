@@ -5,11 +5,19 @@ compatibility_flags = ["nodejs_compat"]
 workers_dev = true
 preview_urls = true
 
-# Custom domains
+# Custom domains — production hostnames bind directly to the Worker.
 routes = [
   { pattern = "www.russ.rest", zone_name = "russ.rest", custom_domain = true },
   { pattern = "russ.rest", zone_name = "russ.rest", custom_domain = true }
 ]
+
+# Static assets — Astro builds to ./dist. Cloudflare serves static files first
+# (so /, /docs/*, /favicon.svg etc. never invoke the Worker); unmatched paths
+# fall through to src/index.ts which handles the API endpoints and JSON 404s.
+[assets]
+directory = "./dist"
+not_found_handling = "none"
+html_handling = "drop-trailing-slash"
 
 [vars]
 DEFAULT_USERNAME = "russmckendrick"
@@ -17,9 +25,3 @@ DEFAULT_USERNAME = "russmckendrick"
 # Development environment
 [env.dev]
 vars = { DEFAULT_USERNAME = "russmckendrick" }
-
-# Production environment
-[env.production]
-routes = [
-  { pattern = "www.russ.rest/*", zone_name = "russ.rest" }
-]

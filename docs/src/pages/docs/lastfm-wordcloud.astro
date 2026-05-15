@@ -1,0 +1,35 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro';
+import EndpointHeader from '../../components/EndpointHeader.astro';
+import ParameterTable from '../../components/ParameterTable.astro';
+import CodeBlock from '../../components/CodeBlock.astro';
+import { lastfmWordcloudContent as c } from '../../data/lastfm-wordcloud';
+
+const headings = [
+  { depth: 2, slug: 'parameters', text: 'Parameters' },
+  { depth: 2, slug: 'examples', text: 'Examples' },
+  { depth: 2, slug: 'github-usage', text: c.githubUsage.title },
+];
+---
+
+<DocsLayout title={c.title} description={c.description} headings={headings}>
+  <p class="label">Last.fm</p>
+  <h1>{c.title}</h1>
+  <p>{c.endpoint.description}</p>
+  <EndpointHeader method={c.endpoint.method} path={c.endpoint.path} />
+
+  <h2 id="parameters">Parameters</h2>
+  <ParameterTable rows={c.parameters} />
+
+  <h2 id="examples">Examples</h2>
+  {c.examples.map((ex) => (
+    <section>
+      <h3>{ex.title}</h3>
+      <CodeBlock code={ex.code} lang="markdown" />
+      <img src={ex.imageSrc} alt={ex.imageAlt} loading="lazy" />
+    </section>
+  ))}
+
+  <h2 id="github-usage">{c.githubUsage.title}</h2>
+  <CodeBlock code={c.githubUsage.code} lang="html" />
+</DocsLayout>

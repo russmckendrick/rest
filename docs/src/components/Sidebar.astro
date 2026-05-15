@@ -1,0 +1,40 @@
+---
+import { nav } from '../data/nav';
+
+interface Props {
+  pathname: string;
+}
+
+const { pathname } = Astro.props;
+
+function normalize(path: string): string {
+  if (path.length > 1 && path.endsWith('/')) return path.slice(0, -1);
+  return path;
+}
+
+const currentPath = normalize(pathname);
+---
+
+<aside class="sidebar" aria-label="Documentation navigation">
+  {nav.map((group) => (
+    <div class="sidebar__group">
+      <p class="sidebar__group-label">{group.section}</p>
+      <ul class="sidebar__list">
+        {group.items.map((item) => {
+          const isActive = normalize(item.href) === currentPath;
+          return (
+            <li>
+              <a
+                href={item.href}
+                class:list={['sidebar__link', isActive && 'is-active']}
+                aria-current={isActive ? 'page' : undefined}
+              >
+                {item.label}
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  ))}
+</aside>

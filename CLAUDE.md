@@ -11,47 +11,46 @@ This is a Cloudflare Workers project that provides Last.fm-powered REST APIs for
 ## Architecture
 
 ### Project Structure
+This is a pnpm workspace with two packages:
+- The **Worker** (`src/`) serves only the API endpoints.
+- The **Astro docs site** (`docs/`) builds static HTML into `dist/` and is served via Workers Static Assets from the same deployment.
+
 ```
-src/
-├── index.ts              # Main router entry point
+src/                      # Cloudflare Worker (API only)
+├── index.ts              # Router entry point — API routes only
 ├── types/                # TypeScript type definitions
-│   ├── lastfm.ts         # Last.fm API response types
-│   └── request.ts        # Request/handler types
-├── utils/                # Shared utilities
-│   ├── cors.ts           # CORS headers and response helpers
-│   ├── escape.ts         # XML/HTML escaping
-│   ├── base64.ts         # Chunked base64 encoding
-│   ├── validation.ts     # Input validation
-│   ├── lastfm-client.ts  # Last.fm API client
-│   └── image.ts          # Image fetching utilities
-├── handlers/             # Route handlers
-│   ├── lastfm-chart.ts
-│   ├── lastfm-last-played.ts
-│   ├── trmnl-lastfm-grid.ts
-│   ├── trmnl-lastfm-last-played.ts
-│   └── trmnl-lastfm-stats.ts
-├── templates/            # Template components
-│   ├── docs.ts           # Documentation page templates
-│   ├── svg/lastfm-logo.ts
-│   └── html/trmnl-base.ts
-└── content/              # Documentation content (separated from templates)
-    ├── index.ts
-    ├── home.ts
-    ├── lastfm-chart.ts
-    ├── lastfm-last-played.ts
-    ├── trmnl-grid.ts
-    ├── trmnl-last-played.ts
-    └── trmnl-stats.ts
+├── utils/                # Shared utilities (cors, escape, base64, validation,
+│                         #   lastfm-client, image)
+├── handlers/             # Route handlers (one per API endpoint)
+└── templates/            # SVG / HTML helpers used by handlers
+    ├── svg/lastfm-logo.ts
+    └── html/trmnl-base.ts
+
+docs/                     # Astro static site (Solarized Dark)
+├── astro.config.mjs      # output: 'static', outDir: '../dist'
+├── package.json
+├── public/favicon.svg
+└── src/
+    ├── pages/            # Routes: index.astro, 404.astro, docs/*.astro
+    ├── layouts/DocsLayout.astro
+    ├── components/       # SiteHeader, SiteFooter, Sidebar, OnThisPage,
+    │                     #   EndpointHeader, ParameterTable, CodeBlock
+    ├── data/             # TS exports per endpoint (nav, home, *)
+    └── styles/global.css # Solarized Dark theme
+
+dist/                     # Astro build output, served by Workers Static Assets
+pnpm-workspace.yaml       # declares root + docs as workspaces
 ```
 
 ### API Endpoints
-- `/` - Documentation homepage
-- `/docs/*` - Per-endpoint documentation pages
-- `/lastfm-chart` - Weekly top artists/albums SVG chart
-- `/lastfm-last-played` - Last played track SVG visualization
-- `/trmnl-lastfm-grid` - 2x5 album grid for e-ink displays
-- `/trmnl-lastfm-last-played` - Last played track for e-ink displays
-- `/trmnl-lastfm-stats` - Profile stats for e-ink displays
+- `/` — Documentation homepage (served from `dist/index.html`)
+- `/docs/*` — Per-endpoint documentation pages (served from `dist/docs/*/index.html`)
+- `/lastfm-chart` — Weekly top artists/albums SVG chart
+- `/lastfm-last-played` — Last played track SVG visualization
+- `/lastfm-wordcloud` — Typographic word cloud of top artists, sized by play count
+- `/trmnl-lastfm-grid` — 2×5 album grid for TRMNL e-ink displays
+- `/trmnl-lastfm-last-played` — Last played track for TRMNL e-ink displays
+- `/trmnl-lastfm-stats` — Profile stats for TRMNL e-ink displays
 
 ### Query Parameters
 - `username` - Last.fm username (default: 'russmckendrick')
@@ -67,16 +66,16 @@ src/
 
 ### Commands
 ```bash
-pnpm install          # Install dependencies
-pnpm run dev          # Start local dev server
-pnpm run typecheck    # Run TypeScript type check
-pnpm run lint         # Run ESLint
-pnpm run lint:fix     # Fix ESLint issues
-pnpm run test         # Run tests in watch mode
-pnpm run test:run     # Run tests once
-pnpm run test:coverage # Run tests with coverage
-pnpm run check        # Run typecheck, lint, and tests
-pnpm run deploy       # Deploy to Cloudflare
+pnpm install            # Install all workspace deps
+pnpm run dev:docs       # Astro dev server (HMR, no API) — http://localhost:4321
+pnpm run dev:worker     # Wrangler dev only (assumes dist/ is built)
+pnpm run dev            # Build docs once, then wrangler dev (API + docs)
+pnpm run build          # Build the Astro site
+pnpm run deploy         # Build docs, then deploy worker + assets
+pnpm run typecheck      # tsc --noEmit on the Worker
+pnpm run lint           # ESLint on src/ and test/
+pnpm run test:run       # Run vitest once
+pnpm run check          # typecheck + lint + tests
 ```
 
 ### Environment Variables
@@ -96,11 +95,11 @@ pnpm run dev
 ## Code Patterns
 
 ### Adding New Endpoints
-1. Create handler in `src/handlers/`
-2. Add to exports in `src/handlers/index.ts`
-3. Add route in `src/index.ts`
-4. Create documentation content in `src/content/`
-5. Add documentation route in `src/templates/docs.ts`
+1. Create the handler in `src/handlers/` and export it from `src/handlers/index.ts`.
+2. Wire the route into `apiRoutes` in `src/index.ts`.
+3. Create a content data file in `docs/src/data/<endpoint>.ts`.
+4. Create the Astro page in `docs/src/pages/docs/<endpoint>.astro`.
+5. Add the endpoint to `docs/src/data/nav.ts` (sidebar) and `docs/src/data/home.ts` (overview list).
 
 ### Handler Structure
 ```typescript
@@ -150,9 +149,9 @@ The `wrangler.toml` configures:
 - `preview_urls = true` for PR previews
 
 ## Tech Stack
-- Cloudflare Workers
+- Cloudflare Workers (API + Static Assets)
+- Astro 5 (static docs site, Solarized Dark)
 - TypeScript (strict mode)
 - Vitest for testing
 - ESLint 9.x (flat config)
-- Tailwind CSS (via CDN for docs)
-- pnpm 10.x
+- pnpm 10.x workspaces

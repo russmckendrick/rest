@@ -1,0 +1,32 @@
+---
+export interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
+interface Props {
+  headings: Heading[];
+}
+
+const { headings } = Astro.props;
+const filtered = headings.filter((h) => h.depth === 2 || h.depth === 3);
+---
+
+{filtered.length > 0 && (
+  <nav class="toc" aria-label="On this page">
+    <p class="label">On this page</p>
+    <ul class="toc__list">
+      {filtered.map((h) => (
+        <li>
+          <a
+            href={`#${h.slug}`}
+            class:list={['toc__link', h.depth === 3 && 'toc__link--h3']}
+          >
+            {h.text}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </nav>
+)}

@@ -1,0 +1,57 @@
+---
+import DocsLayout from '../layouts/DocsLayout.astro';
+import { homeGroups } from '../data/home';
+
+const headings = [
+  { depth: 2, slug: 'lastfm-endpoints', text: 'Last.fm endpoints' },
+  { depth: 2, slug: 'trmnl-endpoints', text: 'TRMNL endpoints' },
+  { depth: 2, slug: 'usage', text: 'Usage' },
+];
+---
+
+<DocsLayout
+  title="Documentation"
+  description="REST endpoints powered by the Last.fm API — SVG charts, last-played visualisations, and TRMNL e-ink display layouts."
+  headings={headings}
+>
+  <p class="label">Start here</p>
+  <h1>Documentation</h1>
+  <p>
+    <code>russ.rest</code> is a small Cloudflare Worker that exposes the Last.fm API as a
+    set of REST endpoints. Each endpoint accepts query-string parameters and returns
+    either an SVG (for embedding in GitHub READMEs and the like) or an HTML document
+    rendered with TRMNL Framework v2 (for use as a TRMNL polling URL).
+  </p>
+  <hr />
+
+  {homeGroups.map((group) => {
+    const slug = group.heading.toLowerCase().includes('last.fm') ? 'lastfm-endpoints' : 'trmnl-endpoints';
+    return (
+      <section>
+        <h2 id={slug}>{group.heading}</h2>
+        <p>{group.intro}</p>
+        <ul class="endpoint-list">
+          {group.endpoints.map((ep) => (
+            <li class="endpoint-list__item">
+              <a href={ep.href} class="endpoint-list__title">{ep.title}</a>
+              <p class="endpoint-list__desc">
+                <code>{ep.path}</code> — {ep.description}
+              </p>
+            </li>
+          ))}
+        </ul>
+      </section>
+    );
+  })}
+
+  <h2 id="usage">Usage</h2>
+  <p>
+    Every endpoint accepts a <code>username</code> parameter; when omitted, the default
+    user (<code>RussMckendrick</code>) is used. SVG endpoints additionally accept a
+    <code>width</code> parameter between 100 and 2000 pixels.
+  </p>
+  <pre><code>https://www.russ.rest/lastfm-chart?artists&amp;username=YourUsername&amp;width=900</code></pre>
+  <p>
+    Source on <a href="https://github.com/russmckendrick/rest" rel="noopener" target="_blank">GitHub</a>.
+  </p>
+</DocsLayout>
