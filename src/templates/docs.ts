@@ -7,6 +7,7 @@ import {
   homeContent,
   lastfmChartContent,
   lastfmLastPlayedContent,
+  lastfmWordcloudContent,
   trmnlGridContent,
   trmnlLastPlayedContent,
   trmnlStatsContent,
@@ -43,6 +44,7 @@ const navLinks: NavLink[] = [
   { href: '/', label: 'Home', icon: '🏠' },
   { href: '/docs/lastfm-chart', label: 'Charts', icon: '📊' },
   { href: '/docs/lastfm-last-played', label: 'Last Played', icon: '🎵' },
+  { href: '/docs/lastfm-wordcloud', label: 'Word Cloud', icon: '☁️' },
   { href: '/docs/trmnl-lastfm-grid', label: 'TRMNL Grid', icon: '🖼️' },
   { href: '/docs/trmnl-lastfm-last-played', label: 'TRMNL Last Played', icon: '📱' },
   { href: '/docs/trmnl-lastfm-stats', label: 'TRMNL Stats', icon: '📈' },
@@ -355,6 +357,46 @@ export function renderHomePage(): string {
 
 export function renderLastfmChartDocs(): string {
   const c = lastfmChartContent;
+
+  const content = `
+    <!-- Page Header -->
+    <div class="mb-12">
+      <div class="flex items-center gap-2 text-sm text-slate-500 mb-4">
+        <a href="/" class="hover:text-slate-900">Home</a>
+        <span>/</span>
+        <span class="text-slate-900">${c.breadcrumb}</span>
+      </div>
+      <div class="flex items-center gap-4 mb-4">
+        <div class="w-14 h-14 bg-gradient-to-br ${c.gradient} rounded-2xl flex items-center justify-center text-white text-3xl shadow-lg ${c.shadowColor}">
+          ${c.icon}
+        </div>
+        <div>
+          <h1 class="text-3xl sm:text-4xl font-bold text-slate-900">${c.title}</h1>
+          <p class="text-slate-600 mt-1">${c.description}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Endpoint -->
+    <div class="bg-white rounded-2xl border border-slate-200 p-6 mb-8">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-sm font-semibold">${c.endpoint.method}</span>
+        <code class="text-lg font-mono text-slate-900">${c.endpoint.path}</code>
+      </div>
+      <p class="text-slate-600">${c.endpoint.description}</p>
+    </div>
+
+    ${renderParametersTable(c.parameters)}
+    ${renderFeaturesGrid(c.features)}
+    ${renderExamples(c.examples)}
+    ${renderGithubUsage(c.githubUsage.title, c.githubUsage.code)}
+  `;
+
+  return renderLayout(c.title, c.description, content);
+}
+
+export function renderLastfmWordcloudDocs(): string {
+  const c = lastfmWordcloudContent;
 
   const content = `
     <!-- Page Header -->

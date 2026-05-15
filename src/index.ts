@@ -8,6 +8,7 @@ import { parseRequestParams } from './utils/validation';
 import {
   handleLastFmChart,
   handleLastFmLastPlayed,
+  handleLastFmWordcloud,
   handleTrmnlLastFmGrid,
   handleTrmnlLastFmLastPlayed,
   handleTrmnlLastFmStats,
@@ -16,6 +17,7 @@ import {
   renderHomePage,
   renderLastfmChartDocs,
   renderLastfmLastPlayedDocs,
+  renderLastfmWordcloudDocs,
   renderTrmnlGridDocs,
   renderTrmnlLastPlayedDocs,
   renderTrmnlStatsDocs,
@@ -26,6 +28,7 @@ import {
 const apiRoutes: Record<string, RouteHandler> = {
   '/lastfm-chart': handleLastFmChart,
   '/lastfm-last-played': handleLastFmLastPlayed,
+  '/lastfm-wordcloud': handleLastFmWordcloud,
   '/trmnl-lastfm-grid': handleTrmnlLastFmGrid,
   '/trmnl-lastfm-last-played': handleTrmnlLastFmLastPlayed,
   '/trmnl-lastfm-stats': handleTrmnlLastFmStats,
@@ -36,6 +39,7 @@ const docRoutes: Record<string, () => string> = {
   '/': renderHomePage,
   '/docs/lastfm-chart': renderLastfmChartDocs,
   '/docs/lastfm-last-played': renderLastfmLastPlayedDocs,
+  '/docs/lastfm-wordcloud': renderLastfmWordcloudDocs,
   '/docs/trmnl-lastfm-grid': renderTrmnlGridDocs,
   '/docs/trmnl-lastfm-last-played': renderTrmnlLastPlayedDocs,
   '/docs/trmnl-lastfm-stats': renderTrmnlStatsDocs,

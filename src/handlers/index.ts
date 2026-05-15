@@ -4,6 +4,7 @@
 
 export { handleLastFmChart } from './lastfm-chart';
 export { handleLastFmLastPlayed } from './lastfm-last-played';
+export { handleLastFmWordcloud } from './lastfm-wordcloud';
 export { handleTrmnlLastFmGrid } from './trmnl-lastfm-grid';
 export { handleTrmnlLastFmLastPlayed } from './trmnl-lastfm-last-played';
 export { handleTrmnlLastFmStats } from './trmnl-lastfm-stats';

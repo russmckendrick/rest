@@ -41,6 +41,17 @@ export const homeContent = {
       docsPath: '/docs/lastfm-last-played',
     },
     {
+      title: 'Artist Word Cloud',
+      path: '/lastfm-wordcloud',
+      description:
+        'Typographic cloud of your most-played artists, sized by play count.',
+      icon: '☁️',
+      gradient: 'from-amber-500 to-orange-600',
+      linkColor: 'text-amber-600 hover:text-amber-700',
+      badge: { label: 'SVG', color: 'bg-emerald-50 text-emerald-700' },
+      docsPath: '/docs/lastfm-wordcloud',
+    },
+    {
       title: 'Album Grid',
       path: '/trmnl-lastfm-grid',
       description:
