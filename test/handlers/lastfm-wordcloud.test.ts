@@ -8,6 +8,7 @@ import {
   validateLimit,
   fontSizeFor,
   renderWordCloudSvg,
+  textWidthEm,
 } from '../../src/handlers/lastfm-wordcloud';
 
 describe('validatePeriod', () => {
@@ -122,5 +123,61 @@ describe('renderWordCloudSvg', () => {
     const artists = [{ name: 'Test', playcount: 100 }];
     const svg = renderWordCloudSvg(artists, 500, false);
     expect(svg).not.toContain('#ff0066');
+  });
+
+  it('places words without visible overlap (overlap invariant)', () => {
+    // Realistic mix: short heavy hitters + long mid-tier names that previously
+    // overlapped due to under-sized collision boxes.
+    const artists = [
+      { name: 'Amplifier', playcount: 1820 },
+      { name: 'Oceansize', playcount: 1640 },
+      { name: 'Rush', playcount: 1490 },
+      { name: 'Marillion', playcount: 1400 },
+      { name: 'Orbital', playcount: 1280 },
+      { name: 'Public Service Broadcasting', playcount: 640 },
+      { name: 'And You Will Know Us By The Trail of Dead', playcount: 430 },
+      { name: 'Anneke van Giersbergen', playcount: 260 },
+      { name: 'Pure Reason Revolution', playcount: 240 },
+      { name: 'Electric Light Orchestra', playcount: 600 },
+    ];
+    const svg = renderWordCloudSvg(artists, 1000);
+
+    // Reconstruct each placed box using the same width metric the handler
+    // applied. The test then asserts the handler is self-consistent: its own
+    // collision checks must hold in the emitted SVG.
+    interface Box { x: number; y: number; w: number; h: number; name: string }
+    const boxes: Box[] = [];
+    const re = /<text x="([\d.]+)" y="([\d.]+)" font-size="([\d.]+)" font-weight="(\d+)" text-anchor="middle" dominant-baseline="middle"( transform="rotate\(-90 [\d.]+ [\d.]+\)")?>([^<]+)<\/text>/g;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(svg)) !== null) {
+      const x = parseFloat(m[1]!);
+      const y = parseFloat(m[2]!);
+      const fs = parseFloat(m[3]!);
+      const isBold = parseInt(m[4]!, 10) >= 700;
+      const rotated = !!m[5];
+      const name = m[6]!;
+      const tw = textWidthEm(name, isBold) * fs;
+      const th = fs;
+      boxes.push({
+        x,
+        y,
+        w: rotated ? th : tw,
+        h: rotated ? tw : th,
+        name,
+      });
+    }
+    expect(boxes.length).toBeGreaterThan(5);
+
+    for (let i = 0; i < boxes.length; i++) {
+      for (let j = i + 1; j < boxes.length; j++) {
+        const a = boxes[i]!;
+        const b = boxes[j]!;
+        const overlapX = Math.abs(a.x - b.x) * 2 < a.w + b.w;
+        const overlapY = Math.abs(a.y - b.y) * 2 < a.h + b.h;
+        if (overlapX && overlapY) {
+          throw new Error(`Overlap: "${a.name}" and "${b.name}"`);
+        }
+      }
+    }
   });
 });

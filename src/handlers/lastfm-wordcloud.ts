@@ -23,14 +23,42 @@ const MAX_LIMIT = 200;
 const DEFAULT_LIMIT = 75;
 const DEFAULT_PERIOD: LastFmPeriod = 'overall';
 const ASPECT_RATIO = 1.6;
-// Tight collision boxes: Arial caps ≈0.55em wide, mixed ≈0.52em. The slightly
-// generous width keeps bold caps from overlapping; the tighter height lets
-// adjacent rows nearly touch like the reference image.
-const CHAR_WIDTH_FACTOR_REG = 0.52;
-const CHAR_WIDTH_FACTOR_BOLD = 0.58;
-const LINE_HEIGHT_FACTOR = 0.92;
-const BOX_PADDING = 0;
+// Cap-height + a little leading. 1.0 prevents capital letters from overhanging
+// the box (which caused visible vertical overlaps at LINE_HEIGHT_FACTOR=0.92).
+const LINE_HEIGHT_FACTOR = 1.0;
+const BOX_PADDING = 1;
+const BOLD_WIDTH_BOOST = 1.07;
 const MAX_SPIRAL_STEPS = 15000;
+
+// Per-character em widths for Arial. Summing these gives much better width
+// estimates than `length * average` — long names like "Public Service
+// Broadcasting" used to under- or over-estimate badly, causing both overlap
+// and wasted gaps.
+const ARIAL_WIDTHS: Record<string, number> = {
+  ' ': 0.28,
+  '!': 0.28, '"': 0.36, '#': 0.56, $: 0.56, '%': 0.89, '&': 0.67,
+  "'": 0.19, '(': 0.33, ')': 0.33, '*': 0.39, '+': 0.58, ',': 0.28,
+  '-': 0.33, '.': 0.28, '/': 0.28,
+  '0': 0.56, '1': 0.56, '2': 0.56, '3': 0.56, '4': 0.56,
+  '5': 0.56, '6': 0.56, '7': 0.56, '8': 0.56, '9': 0.56,
+  ':': 0.28, ';': 0.28, '<': 0.58, '=': 0.58, '>': 0.58, '?': 0.56, '@': 1.02,
+  A: 0.67, B: 0.67, C: 0.72, D: 0.72, E: 0.67, F: 0.61, G: 0.78,
+  H: 0.72, I: 0.28, J: 0.50, K: 0.67, L: 0.56, M: 0.83, N: 0.72,
+  O: 0.78, P: 0.67, Q: 0.78, R: 0.72, S: 0.67, T: 0.61, U: 0.72,
+  V: 0.67, W: 0.94, X: 0.67, Y: 0.67, Z: 0.61,
+  '[': 0.28, '\\': 0.28, ']': 0.28, '^': 0.47, _: 0.56, '`': 0.33,
+  a: 0.56, b: 0.56, c: 0.50, d: 0.56, e: 0.56, f: 0.28, g: 0.56,
+  h: 0.56, i: 0.22, j: 0.22, k: 0.50, l: 0.22, m: 0.83, n: 0.56,
+  o: 0.56, p: 0.56, q: 0.56, r: 0.33, s: 0.50, t: 0.28, u: 0.56,
+  v: 0.50, w: 0.72, x: 0.50, y: 0.50, z: 0.50,
+  '{': 0.33, '|': 0.26, '}': 0.33, '~': 0.58,
+};
+
+export function textWidthEm(name: string, isBold: boolean): number {
+  let sum = 0;
+  for (const ch of name) sum += ARIAL_WIDTHS[ch] ?? 0.56;
+  return isBold ? sum * BOLD_WIDTH_BOOST : sum;
+}
 
 export interface ArtistDatum {
   name: string;
@@ -129,16 +157,24 @@ function placeWord(
   cy: number,
   rng: () => number
 ): PlacedBox | null {
-  // Phase 1: tight Archimedean spiral, anchored at centre. Good for early/large words.
+  // Phase 1: elliptical Archimedean spiral anchored at centre. The aspect
+  // multiplier stretches the spiral so it fills wider/taller canvases instead
+  // of leaving rectangular gutters along the long axis.
   const a = 0.4;
   const dt = 0.08;
-  const maxSpiralRadius = Math.hypot(width, height) / 2;
+  const aspectX = width / Math.min(width, height);
+  const aspectY = height / Math.min(width, height);
   for (let step = 0; step < MAX_SPIRAL_STEPS; step++) {
     const t = step * dt;
     const r = a * t;
-    if (r > maxSpiralRadius) break;
-    const x = cx + r * Math.cos(t);
-    const y = cy + r * Math.sin(t);
+    const x = cx + r * aspectX * Math.cos(t);
+    const y = cy + r * aspectY * Math.sin(t);
+    if (
+      Math.abs(x - cx) > width / 2 + candidate.w &&
+      Math.abs(y - cy) > height / 2 + candidate.h
+    ) {
+      break;
+    }
     const result = tryPlace(candidate, placed, width, height, x, y);
     if (result) return result;
   }
@@ -202,25 +238,31 @@ export function renderWordCloudSvg(artists: ArtistDatum[], width: number, debug 
 
   const placed: PlacedBox[] = [];
 
+  // Build the candidate list first (with sizes, orientation, display name)
+  // so we can place by box-area descending. d3-cloud does the same: a
+  // long-but-mid-tier name like "Public Service Broadcasting" has a bigger
+  // footprint than the #2 artist's short name, and needs first dibs on space.
+  interface Candidate extends PlacedBox {
+    rank: number;
+  }
+  const candidates: Candidate[] = [];
+
   sorted.forEach((artist, i) => {
     let fontSize = fontSizeFor(artist.playcount, minPlay, maxPlay, minFont, maxFont);
     const isBold = i < boldCutoff;
     const weight = isBold ? 700 : 400;
-    // Bold tier uses upper-case display like the reference image
-    // ("AMPLIFIER", "OCEANSIZE", …); regular tier keeps natural casing.
     const displayName = isBold ? artist.name.toUpperCase() : artist.name;
-    const charFactor = isBold ? CHAR_WIDTH_FACTOR_BOLD : CHAR_WIDTH_FACTOR_REG;
 
-    // Decide orientation: rotate ~30% of mid-tier artists for variety, and
-    // auto-rotate words that would otherwise dominate the canvas width.
-    let textW = displayName.length * fontSize * charFactor + BOX_PADDING * 2;
+    let textW = textWidthEm(displayName, isBold) * fontSize + BOX_PADDING * 2;
     let textH = fontSize * LINE_HEIGHT_FACTOR + BOX_PADDING * 2;
-    const tooWide = textW > width * 0.55;
+
+    // Auto-rotate words wider than 40% of the canvas (was 55%), plus a small
+    // index-based rotation for visual variety. Keeps the very top 3 horizontal.
+    const tooWide = textW > width * 0.4;
     const indexRotate = i >= 3 && (i % 7 === 2 || i % 7 === 5);
     let rotated = tooWide || indexRotate;
 
-    // Shrink-to-fit: if neither orientation fits the canvas, shrink. Long names
-    // (e.g. "Public Service Broadcasting") would otherwise be dropped.
+    // Shrink-to-fit: if neither orientation fits the canvas, shrink.
     while (true) {
       const boxW = rotated ? textH : textW;
       const boxH = rotated ? textW : textH;
@@ -235,7 +277,7 @@ export function renderWordCloudSvg(artists: ArtistDatum[], width: number, debug 
       }
       if (fontSize <= minFont) break;
       fontSize = Math.max(minFont, fontSize * 0.9);
-      textW = displayName.length * fontSize * charFactor + BOX_PADDING * 2;
+      textW = textWidthEm(displayName, isBold) * fontSize + BOX_PADDING * 2;
       textH = fontSize * LINE_HEIGHT_FACTOR + BOX_PADDING * 2;
     }
 
@@ -243,7 +285,7 @@ export function renderWordCloudSvg(artists: ArtistDatum[], width: number, debug 
     const boxH = rotated ? textW : textH;
     if (boxW > width || boxH > height) return;
 
-    const candidate: PlacedBox = {
+    candidates.push({
       cx: 0,
       cy: 0,
       w: boxW,
@@ -252,8 +294,13 @@ export function renderWordCloudSvg(artists: ArtistDatum[], width: number, debug 
       rotated,
       weight,
       name: displayName,
-    };
+      rank: i,
+    });
+  });
 
+  // Place largest footprint first, smallest last.
+  candidates.sort((a, b) => b.w * b.h - a.w * a.h);
+  candidates.forEach((candidate) => {
     const result = placeWord(candidate, placed, width, height, cx, cy, rng);
     if (result) placed.push(result);
   });
