@@ -11,7 +11,12 @@ export const lastfmLastPlayedContent = {
 
   parameters: [
     { name: 'username', description: 'Last.fm username.', default: 'RussMckendrick' },
-    { name: 'width', description: 'Width of the generated SVG in pixels (100–2000).', default: '500' },
+    {
+      name: 'width',
+      description: 'Width of the generated SVG in pixels (100–2000).',
+      default: '500',
+    },
+    { name: 'style', description: 'Output style: modern or classic.', default: 'modern' },
     { name: 'debug', description: 'Render debug overlays.', optional: true },
   ],
 

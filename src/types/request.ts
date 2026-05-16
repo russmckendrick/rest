@@ -13,6 +13,7 @@ export interface RequestParams {
   debug: boolean;
   showAlbums: boolean;
   showArtists: boolean;
+  style: 'classic' | 'modern';
 }
 
 export interface HandlerContext {

@@ -6,9 +6,11 @@ import { describe, it, expect } from 'vitest';
 import {
   validateUsername,
   validateWidth,
+  validateStyle,
   parseRequestParams,
   DEFAULT_USERNAME,
   DEFAULT_WIDTH,
+  DEFAULT_STYLE,
   MIN_WIDTH,
   MAX_WIDTH,
 } from '../../src/utils/validation';
@@ -117,9 +119,30 @@ describe('validateWidth', () => {
   });
 });
 
+describe('validateStyle', () => {
+  it('returns default for null input', () => {
+    const result = validateStyle(null);
+    expect(result.success).toBe(true);
+    expect(result.value).toBe(DEFAULT_STYLE);
+    expect(result.value).toBe('modern');
+  });
+
+  it('accepts supported styles', () => {
+    expect(validateStyle('classic').value).toBe('classic');
+    expect(validateStyle('modern').value).toBe('modern');
+    expect(validateStyle(' Modern ').value).toBe('modern');
+  });
+
+  it('rejects unsupported styles', () => {
+    const result = validateStyle('retro');
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('Style must be one of');
+  });
+});
+
 describe('parseRequestParams', () => {
   it('parses valid URL parameters', () => {
-    const url = new URL('https://example.com/test?username=testuser&width=800');
+    const url = new URL('https://example.com/test?username=testuser&width=800&style=modern');
     const env = { LASTFM_API_KEY: 'test' };
 
     const result = parseRequestParams(url, env);
@@ -131,6 +154,7 @@ describe('parseRequestParams', () => {
       debug: false,
       showAlbums: false,
       showArtists: true,
+      style: 'modern',
     });
   });
 
@@ -143,6 +167,7 @@ describe('parseRequestParams', () => {
     expect(result.success).toBe(true);
     expect(result.value?.username).toBe(DEFAULT_USERNAME);
     expect(result.value?.width).toBe(DEFAULT_WIDTH);
+    expect(result.value?.style).toBe(DEFAULT_STYLE);
   });
 
   it('uses env DEFAULT_USERNAME when available', () => {
@@ -204,6 +229,16 @@ describe('parseRequestParams', () => {
 
   it('returns error for invalid width', () => {
     const url = new URL('https://example.com/test?width=abc');
+    const env = { LASTFM_API_KEY: 'test' };
+
+    const result = parseRequestParams(url, env);
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBeDefined();
+  });
+
+  it('returns error for invalid style', () => {
+    const url = new URL('https://example.com/test?style=retro');
     const env = { LASTFM_API_KEY: 'test' };
 
     const result = parseRequestParams(url, env);

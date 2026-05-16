@@ -165,6 +165,32 @@ describe('LastFmClient', () => {
       expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining('album=Album+%2F+Title'));
     });
   });
+
+  describe('getArtistInfo', () => {
+    it('URL encodes artist names and requests autocorrection', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ artist: { name: 'Artist & Friends', image: [] } }),
+      } as Response);
+
+      await client.getArtistInfo('Artist & Friends');
+
+      expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining('method=artist.getInfo'));
+      expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining('artist=Artist+%26+Friends'));
+      expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining('autocorrect=1'));
+    });
+
+    it('includes username when supplied', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ artist: { name: 'Test Artist', image: [] } }),
+      } as Response);
+
+      await client.getArtistInfo('Test Artist', 'testuser');
+
+      expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining('username=testuser'));
+    });
+  });
 });
 
 describe('LastFmApiError', () => {

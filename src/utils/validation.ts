@@ -9,6 +9,10 @@ export const MIN_WIDTH = 100;
 export const MAX_WIDTH = 2000;
 export const DEFAULT_WIDTH = 500;
 export const DEFAULT_USERNAME = 'russmckendrick';
+export const DEFAULT_STYLE = 'modern';
+export const OUTPUT_STYLES = ['classic', 'modern'] as const;
+
+export type OutputStyle = (typeof OUTPUT_STYLES)[number];
 
 /**
  * Validate Last.fm username
@@ -59,6 +63,25 @@ export function validateWidth(
 }
 
 /**
+ * Validate output style parameter
+ */
+export function validateStyle(
+  input: string | null,
+  defaultValue: OutputStyle = DEFAULT_STYLE
+): ValidationResult<OutputStyle> {
+  if (!input) {
+    return { success: true, value: defaultValue };
+  }
+
+  const value = input.trim().toLowerCase();
+  if (OUTPUT_STYLES.includes(value as OutputStyle)) {
+    return { success: true, value: value as OutputStyle };
+  }
+
+  return { success: false, error: `Style must be one of: ${OUTPUT_STYLES.join(', ')}` };
+}
+
+/**
  * Parse and validate all request parameters from URL
  */
 export function parseRequestParams(url: URL, env: Env): ValidationResult<RequestParams> {
@@ -74,6 +97,11 @@ export function parseRequestParams(url: URL, env: Env): ValidationResult<Request
     return { success: false, error: widthResult.error };
   }
 
+  const styleResult = validateStyle(url.searchParams.get('style'));
+  if (!styleResult.success || !styleResult.value) {
+    return { success: false, error: styleResult.error };
+  }
+
   const showAlbums = url.searchParams.has('albums');
   const showArtists = url.searchParams.has('artists') || !showAlbums;
 
@@ -85,6 +113,7 @@ export function parseRequestParams(url: URL, env: Env): ValidationResult<Request
       debug: url.searchParams.has('debug'),
       showAlbums,
       showArtists,
+      style: styleResult.value,
     },
   };
 }

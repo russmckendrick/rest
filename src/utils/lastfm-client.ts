@@ -9,6 +9,7 @@ import type {
   WeeklyAlbumChartResponse,
   RecentTracksResponse,
   AlbumInfoResponse,
+  ArtistInfoResponse,
   LastFmPeriod,
   LastFmErrorResponse,
 } from '../types';
@@ -115,5 +116,18 @@ export class LastFmClient {
       artist,
       album,
     });
+  }
+
+  async getArtistInfo(artist: string, username?: string): Promise<ArtistInfoResponse> {
+    const params: Record<string, string> = {
+      artist,
+      autocorrect: '1',
+    };
+
+    if (username) {
+      params['username'] = username;
+    }
+
+    return this.request<ArtistInfoResponse>('artist.getInfo', params);
   }
 }

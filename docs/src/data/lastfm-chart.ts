@@ -10,10 +10,19 @@ export const lastfmChartContent = {
   },
 
   parameters: [
-    { name: 'artists', description: 'Display top artists. Default if no view is specified.', optional: true },
+    {
+      name: 'artists',
+      description: 'Display top artists. Default if no view is specified.',
+      optional: true,
+    },
     { name: 'albums', description: 'Display top albums.', optional: true },
     { name: 'username', description: 'Last.fm username.', default: 'RussMckendrick' },
-    { name: 'width', description: 'Width of the generated SVG in pixels (100–2000).', default: '500' },
+    {
+      name: 'width',
+      description: 'Width of the generated SVG in pixels (100–2000).',
+      default: '500',
+    },
+    { name: 'style', description: 'Output style: modern or classic.', default: 'modern' },
   ],
 
   examples: [

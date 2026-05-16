@@ -132,6 +132,21 @@ export interface AlbumInfoResponse {
   };
 }
 
+export interface ArtistInfoResponse {
+  artist: {
+    name: string;
+    mbid?: string;
+    url: string;
+    image: LastFmImage[];
+    streamable?: string;
+    stats?: {
+      listeners: string;
+      playcount: string;
+      userplaycount?: string;
+    };
+  };
+}
+
 export interface LastFmErrorResponse {
   error: number;
   message: string;
