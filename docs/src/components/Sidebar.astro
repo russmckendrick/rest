@@ -1,6 +1,8 @@
 ---
 import { nav } from '../data/nav';
 
+const githubUrl = 'https://github.com/russmckendrick/rest';
+
 interface Props {
   pathname: string;
 }
@@ -16,25 +18,36 @@ const currentPath = normalize(pathname);
 ---
 
 <aside class="sidebar" aria-label="Documentation navigation">
-  {nav.map((group) => (
-    <div class="sidebar__group">
-      <p class="sidebar__group-label">{group.section}</p>
-      <ul class="sidebar__list">
-        {group.items.map((item) => {
-          const isActive = normalize(item.href) === currentPath;
-          return (
-            <li>
-              <a
-                href={item.href}
-                class:list={['sidebar__link', isActive && 'is-active']}
-                aria-current={isActive ? 'page' : undefined}
-              >
-                {item.label}
-              </a>
-            </li>
-          );
-        })}
-      </ul>
-    </div>
-  ))}
+  <a href="/" class="sidebar-logo" aria-label="russ.rest home">
+    <img src="/logo.svg" alt="" width="220" height="136" decoding="async" />
+  </a>
+  <div class="sidebar__nav">
+    {nav.map((group) => (
+      <div class="sidebar__group">
+        <p class="sidebar__group-label">{group.section}</p>
+        <ul class="sidebar__list">
+          {group.items.map((item) => {
+            const isActive = normalize(item.href) === currentPath;
+            return (
+              <li>
+                <a
+                  href={item.href}
+                  class:list={['sidebar__link', isActive && 'is-active']}
+                  aria-current={isActive ? 'page' : undefined}
+                >
+                  {item.label}
+                </a>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    ))}
+  </div>
+  <div class="sidebar__source">
+    <p class="sidebar__group-label">Source</p>
+    <a href={githubUrl} class="sidebar__link sidebar__link--external" rel="noopener" target="_blank">
+      GitHub
+    </a>
+  </div>
 </aside>

@@ -1,6 +1,5 @@
 ---
 import '../styles/global.css';
-import SiteHeader from '../components/SiteHeader.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 import Sidebar from '../components/Sidebar.astro';
 import OnThisPage from '../components/OnThisPage.astro';
@@ -37,7 +36,6 @@ const pageTitle = title === 'Documentation' ? 'russ.rest — Documentation' : `$
     />
   </head>
   <body>
-    <SiteHeader />
     <div class="docs-shell">
       <Sidebar pathname={pathname} />
       <main class="docs-main">
