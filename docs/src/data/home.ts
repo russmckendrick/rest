@@ -58,6 +58,12 @@ export const homeGroups: HomeGroup[] = [
         path: '/trmnl-lastfm-stats',
         description: 'Profile statistics and weekly top five artists.',
       },
+      {
+        title: 'Listening heatmap',
+        href: '/docs/trmnl-lastfm-heatmap',
+        path: '/trmnl-lastfm-heatmap',
+        description: '12-week scrobble heatmap — one column per week, seven rows for Mon–Sun, shaded by daily play count.',
+      },
     ],
   },
 ];

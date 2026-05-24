@@ -104,11 +104,19 @@ export class LastFmClient {
     });
   }
 
-  async getRecentTracks(username: string, limit = 1): Promise<RecentTracksResponse> {
-    return this.request<RecentTracksResponse>('user.getrecenttracks', {
+  async getRecentTracks(
+    username: string,
+    limit = 1,
+    options: { from?: number; to?: number; page?: number } = {}
+  ): Promise<RecentTracksResponse> {
+    const params: Record<string, string> = {
       user: username,
       limit: limit.toString(),
-    });
+    };
+    if (options.from !== undefined) params['from'] = options.from.toString();
+    if (options.to !== undefined) params['to'] = options.to.toString();
+    if (options.page !== undefined) params['page'] = options.page.toString();
+    return this.request<RecentTracksResponse>('user.getrecenttracks', params);
   }
 
   async getAlbumInfo(artist: string, album: string): Promise<AlbumInfoResponse> {

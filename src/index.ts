@@ -17,6 +17,7 @@ import {
   handleTrmnlLastFmGrid,
   handleTrmnlLastFmLastPlayed,
   handleTrmnlLastFmStats,
+  handleTrmnlLastFmHeatmap,
 } from './handlers';
 
 const apiRoutes: Record<string, RouteHandler> = {
@@ -26,6 +27,7 @@ const apiRoutes: Record<string, RouteHandler> = {
   '/trmnl-lastfm-grid': handleTrmnlLastFmGrid,
   '/trmnl-lastfm-last-played': handleTrmnlLastFmLastPlayed,
   '/trmnl-lastfm-stats': handleTrmnlLastFmStats,
+  '/trmnl-lastfm-heatmap': handleTrmnlLastFmHeatmap,
 };
 
 export default {

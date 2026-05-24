@@ -27,6 +27,7 @@ export const nav: NavGroup[] = [
       { label: 'Album grid', href: '/docs/trmnl-lastfm-grid' },
       { label: 'Last played', href: '/docs/trmnl-lastfm-last-played' },
       { label: 'Profile stats', href: '/docs/trmnl-lastfm-stats' },
+      { label: 'Listening heatmap', href: '/docs/trmnl-lastfm-heatmap' },
     ],
   },
 ];
