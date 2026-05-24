@@ -1,12 +1,12 @@
 export const trmnlLastPlayedContent = {
   title: 'TRMNL last played',
-  description: 'Currently-listening track for TRMNL e-ink displays.',
+  description: 'Most recently played album for TRMNL e-ink displays.',
 
   endpoint: {
     method: 'GET',
     path: '/trmnl-lastfm-last-played',
     description:
-      'Display your most recently played track from Last.fm with album artwork and track details, optimised for TRMNL e-ink displays.',
+      'Display the album of your most recently played track from Last.fm with cover art and artist, optimised for TRMNL e-ink displays.',
   },
 
   parameters: [
@@ -24,7 +24,7 @@ export const trmnlLastPlayedContent = {
     steps: [
       'Create a new Private Plugin in your TRMNL dashboard.',
       'Set the polling URL to https://www.russ.rest/trmnl-lastfm-last-played?username=YourUsername',
-      'Set the refresh interval — 5–15 minutes is recommended for current-track freshness.',
+      'Set the refresh interval — 5–15 minutes is recommended for album freshness.',
     ],
   },
 };

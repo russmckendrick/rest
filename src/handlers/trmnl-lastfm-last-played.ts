@@ -10,35 +10,52 @@ import { escapeHtml } from '../utils/escape';
 import { fetchImageFromLastFm } from '../utils/image';
 import { renderTrmnlPage } from '../templates/html/trmnl-base';
 
+/**
+ * Pick a font size in px that lets a string fit comfortably in the
+ * ~344px-wide artist column without truncation. Two-line wrap allowed.
+ */
+function fitFontSize(text: string): number {
+  const len = text.length;
+  if (len <= 12) return 56;
+  if (len <= 18) return 48;
+  if (len <= 26) return 38;
+  if (len <= 36) return 30;
+  if (len <= 50) return 24;
+  return 20;
+}
+
 function generateLastPlayedContent(
-  trackName: string,
   artistName: string,
   albumName: string,
   albumArtDataUri: string | null,
   isNowPlaying: boolean
 ): string {
-  const escapedTrack = escapeHtml(trackName);
   const escapedArtist = escapeHtml(artistName);
   const escapedAlbum = escapeHtml(albumName);
 
   const albumArt = albumArtDataUri
-    ? `<img class="image-dither" src="${escapeHtml(albumArtDataUri)}" alt="Album Art" style="width: 300px; height: 300px; object-fit: cover; border: 2px solid #000;" />`
-    : `<div style="width: 300px; height: 300px; background: #ccc; border: 2px solid #000; display: flex; align-items: center; justify-content: center;">
-        <span style="font-size: 24px; color: #666;">No Art</span>
-      </div>`;
+    ? `<img class="image image-dither" src="${escapeHtml(albumArtDataUri)}" alt="${escapedAlbum}" />`
+    : `<div class="album-art__placeholder"><span>No Art</span></div>`;
+
+  const backdrop = albumArtDataUri
+    ? `<div class="last-played__backdrop" style="background-image: url('${escapeHtml(albumArtDataUri)}');"></div>`
+    : '';
 
   const statusText = isNowPlaying ? 'Now Playing' : 'Last Played';
+  const artistSize = fitFontSize(`by ${artistName}`);
 
   return `
-    <div class="last-played-container">
-      <div class="album-art">
-        ${albumArt}
-      </div>
-      <div class="track-info">
-        <div class="status" data-clamp="1">${statusText}</div>
-        <div class="track-name" data-clamp="2">${escapedTrack}</div>
-        <div class="artist-name" data-clamp="1">by ${escapedArtist}</div>
-        <div class="album-name" data-clamp="1">from ${escapedAlbum}</div>
+    <div class="last-played">
+      ${backdrop}
+      <div class="last-played__content">
+        <div class="album-art">
+          ${albumArt}
+        </div>
+        <div class="album-info">
+          <span class="label" data-clamp="1">${statusText}</span>
+          <span class="title title--large album-info__title" data-clamp="3">${escapedAlbum}</span>
+          <span class="value album-info__artist" style="font-size: ${artistSize}px;">by ${escapedArtist}</span>
+        </div>
       </div>
     </div>
   `;
@@ -74,46 +91,77 @@ export async function handleTrmnlLastFmLastPlayed(ctx: HandlerContext): Promise<
   }
 
   const additionalStyles = `
-    .last-played-container {
+    .last-played {
+      position: relative;
+      height: 100%;
+      background: var(--gray-75);
+      overflow: hidden;
+    }
+    .last-played__backdrop {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      opacity: 0.12;
+      filter: blur(2px);
+      pointer-events: none;
+    }
+    .last-played__content {
+      position: relative;
+      z-index: 1;
       display: flex;
       align-items: center;
-      padding: 20px;
-      height: calc(100% - 100px);
-      gap: 30px;
+      gap: 32px;
+      padding: 24px 32px;
+      height: 100%;
+      box-sizing: border-box;
     }
     .album-art {
-      flex-shrink: 0;
+      flex: 0 0 360px;
+      width: 360px;
+      height: 360px;
+      border: 2px solid var(--black);
+      background: var(--white);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-    .track-info {
+    .album-art img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .album-art__placeholder {
+      width: 100%;
+      height: 100%;
+      background: var(--gray-75);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: var(--gray-3);
+    }
+    .album-info {
       flex: 1;
+      min-width: 0;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 12px;
     }
-    .status {
-      font-size: 20px;
-      color: #666;
-      text-transform: uppercase;
+    .album-info .label {
       letter-spacing: 2px;
     }
-    .track-name {
-      font-size: 42px;
-      font-weight: bold;
-      color: #000;
+    .album-info__title {
       line-height: 1.1;
     }
-    .artist-name {
-      font-size: 32px;
-      color: #333;
-    }
-    .album-name {
-      font-size: 28px;
-      color: #666;
+    .album-info__artist {
+      color: var(--gray-2);
     }
   `;
 
   const content = generateLastPlayedContent(
-    track.name,
     track.artist['#text'],
     track.album['#text'],
     albumArtDataUri,

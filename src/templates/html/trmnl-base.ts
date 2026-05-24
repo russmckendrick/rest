@@ -38,24 +38,17 @@ export function renderTrmnlPage(options: TrmnlTemplateOptions): string {
   return `<!DOCTYPE html>
 <html>
 <head>
-  <link rel="stylesheet" href="https://usetrmnl.com/css/latest/plugins.css">
-  <script src="https://usetrmnl.com/js/latest/plugins.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="https://trmnl.com/css/latest/plugins.css">
+  <script src="https://trmnl.com/js/latest/plugins.js"></script>
   <style>
-    /* Force high contrast for e-ink display */
-    body {
-      background: #fff !important;
-      color: #000 !important;
-    }
-    .screen, .view, .layout {
-      background: #fff !important;
-    }
-    /* Ensure proper image rendering */
     img {
       image-rendering: auto;
       image-rendering: -webkit-optimize-contrast;
       image-rendering: crisp-edges;
     }
-    /* Title bar styling */
     .title_bar {
       height: 60px;
       display: flex;
@@ -76,12 +69,11 @@ export function renderTrmnlPage(options: TrmnlTemplateOptions): string {
   <div class="screen">
     <div class="view view--full">
       <div class="layout layout--col">
-        <!-- Black pixel for rendering context -->
         <img src="${BLACK_PIXEL}" width="1" height="1" style="position: absolute; top: 0; left: 0; opacity: 0; pointer-events: none; display: block;" alt="" />
         ${content}
       </div>
       <div class="title_bar">
-        <img class="image" src="https://usetrmnl.com/images/plugins/trmnl--render.svg" alt="" />
+        <img class="image" src="https://trmnl.com/images/plugins/trmnl--render.svg" alt="" />
         <span class="title" data-clamp="1">${escapedTitle}</span>
         <span class="instance" data-clamp="1">${escapedInstance}</span>
       </div>
