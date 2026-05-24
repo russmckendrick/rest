@@ -53,13 +53,22 @@ export function renderTrmnlPage(options: TrmnlTemplateOptions): string {
       height: 60px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      gap: 12px;
       padding: 0 16px;
       background: #fff;
       border-top: 2px solid #000;
     }
-    .title_bar .title,
+    .title_bar .image {
+      flex-shrink: 0;
+    }
+    .title_bar .title {
+      flex: 1;
+      min-width: 0;
+      color: #000 !important;
+    }
     .title_bar .instance {
+      flex-shrink: 0;
+      max-width: 60%;
       color: #000 !important;
     }
     ${additionalStyles}
