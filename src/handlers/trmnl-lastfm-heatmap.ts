@@ -86,9 +86,9 @@ function generateHeatmapContent(
   const monthHeader = weeks
     .map((week, idx) => {
       const firstDay = week[0];
-      const showMonth =
-        idx === 0 || (firstDay.date.getUTCDate() <= 7);
-      const label = showMonth ? MONTH_LABELS[firstDay.date.getUTCMonth()] : '';
+      if (!firstDay) return '<div class="hm-month"></div>';
+      const showMonth = idx === 0 || firstDay.date.getUTCDate() <= 7;
+      const label = showMonth ? MONTH_LABELS[firstDay.date.getUTCMonth()] ?? '' : '';
       return `<div class="hm-month">${label}</div>`;
     })
     .join('');
@@ -200,7 +200,7 @@ async function fetchScrobbleBuckets(
     debugInfo.push(`Pages: ${totalPages} (capped at ${MAX_PAGES})`);
   }
 
-  const tally = (tracks: LastFmTrack[]) => {
+  const tally = (tracks: LastFmTrack[]): void => {
     for (const track of tracks) {
       if (track['@attr']?.nowplaying === 'true') continue;
       const uts = track.date?.uts;
@@ -208,7 +208,10 @@ async function fetchScrobbleBuckets(
       const date = new Date(parseInt(uts, 10) * 1000);
       const key = dayKey(date);
       const idx = indexByKey.get(key);
-      if (idx !== undefined) buckets[idx].count++;
+      if (idx !== undefined) {
+        const bucket = buckets[idx];
+        if (bucket) bucket.count++;
+      }
     }
   };
 

@@ -49,7 +49,7 @@ export function createSvgResponse(svg: string, cache = true): Response {
 
 export function createHtmlResponse(html: string, cache = true): Response {
   return createResponse(html, {
-    contentType: 'text/html',
+    contentType: 'text/html; charset=utf-8',
     cacheControl: cache ? 'public, max-age=1800' : 'no-store',
   });
 }

@@ -121,7 +121,7 @@ describe('createHtmlResponse', () => {
   it('sets HTML content type', () => {
     const response = createHtmlResponse('<html></html>');
 
-    expect(response.headers.get('Content-Type')).toBe('text/html');
+    expect(response.headers.get('Content-Type')).toBe('text/html; charset=utf-8');
   });
 
   it('sets cache control for cached responses', () => {
